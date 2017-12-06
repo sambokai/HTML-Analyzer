@@ -9,7 +9,8 @@ GET         /count               controllers.CountController.count
 # An example controller showing how to write asynchronous code
 GET         /message             controllers.AsyncController.message
 
-GET         /analyzer            controllers.HttpAnalyzerController.showAnalysis
-POST        /analyzer            controllers.HttpAnalyzerController.analyzeURL()
+GET         /analyzer            controllers.HttpAnalyzerController.index
+POST        /analyzer            controllers.HttpAnalyzerController.post
+
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file        controllers.Assets.versioned(path="/public", file: Asset)
