@@ -17,5 +17,7 @@ libraryDependencies += "org.jsoup" % "jsoup" % "1.10.3"
 
 // WebJars
 libraryDependencies ++= Seq(
-  "org.webjars" % "bootstrap" % "4.0.0-beta.2"
+  "org.webjars" % "bootstrap" % "4.0.0-beta.2",
+  "org.webjars" % "jquery" % "3.2.1",
+  "org.webjars.npm" % "popper.js" % "1.13.0"
 )
