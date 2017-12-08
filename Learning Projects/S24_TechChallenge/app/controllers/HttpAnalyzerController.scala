@@ -3,32 +3,32 @@ package controllers
 import javax.inject.{Inject, Singleton}
 
 import controllers.WebsiteForm._
+import models.Webpage
 import play.api.data.Form
 import play.api.mvc._
-
-// TODO: learn more about Play Forms
-// TODO: learn about implicit parameters
-
 
 @Singleton
 class HttpAnalyzerController @Inject()(messagesAction: MessagesActionBuilder, components: ControllerComponents) extends AbstractController(components) {
   private val postUrl = routes.HttpAnalyzerController.post()
 
+  private var websiteAnalysis: Option[Webpage] = None
 
   def index = messagesAction { implicit request: MessagesRequest[AnyContent] =>
-    Ok(views.html.HttpAnalyzer(form, postUrl))
+    Ok(views.html.HttpAnalyzer(websiteAnalysis, form, postUrl))
   }
 
   def post = messagesAction { implicit request: MessagesRequest[AnyContent] =>
 
     val errorFunction = { formWithErrors: Form[Data] =>
       println("Error: " + formWithErrors) // Debug
-      BadRequest(views.html.HttpAnalyzer(formWithErrors, postUrl))
+      websiteAnalysis = None
+      BadRequest(views.html.HttpAnalyzer(websiteAnalysis, formWithErrors, postUrl))
     }
 
     val successFunction = { data: Data =>
-      println("Success: " + data) // Debug
-      Redirect(routes.HttpAnalyzerController.index()).flashing("info" -> "Website analyzed.")
+      websiteAnalysis = Some(new Webpage(data.url))
+      Redirect(routes.HttpAnalyzerController.index())
+      //        .flashing("info" -> "Website analyzed.")
     }
 
     val formValidationResult = form.bindFromRequest
