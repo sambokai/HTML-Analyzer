@@ -10,6 +10,15 @@ class Webpage(url: String) {
 
   val title: String = doc.title()
 
+  val headings: Map[String, Int] = {
+    val allHeadings = doc
+      .select("h0, h1, h2, h3, h4, h5, h6")
+      .asScala
+      .map(_.tag().getName)
+
+    allHeadings.groupBy(identity).mapValues(_.size)
+  }
+
   val html_version: HTMLVersion = {
     val doctypeInDOM = {
       doc

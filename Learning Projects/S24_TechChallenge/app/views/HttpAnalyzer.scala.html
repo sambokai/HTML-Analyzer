@@ -26,6 +26,10 @@
         <th scope="col"></th>
         <th scope="col">Title</th>
         <th scope="col">HTML Version</th>
+        @* TODO: Sort heading columns from low to high *@
+        @for((headingLevel, count) <- analysisData.fold(Map.empty[String, Int])(x => x.headings)) {
+          <th scope="col">@headingLevel.toString</th>
+        }
       </tr>
     </thead>
     <tbody>
@@ -33,6 +37,9 @@
         <th scope="row"></th>
         <td>@analysisData.fold("")(x => x.title)</td>
         <td>@analysisData.fold("")(page => page.html_version.value)</td>
+        @for((headingLevel, count) <- analysisData.fold(Map.empty[String, Int])(x => x.headings)) {
+          <td>@count.toString</td>
+        }
       </tr>
     </tbody>
   </table>
