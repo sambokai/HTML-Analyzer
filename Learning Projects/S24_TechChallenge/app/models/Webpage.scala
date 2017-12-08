@@ -6,7 +6,7 @@ import org.jsoup.nodes.{Document, DocumentType}
 import scala.collection.JavaConverters._
 
 class Webpage(url: String) {
-  val doc: Document = Jsoup.connect(url).get()
+  private val doc: Document = Jsoup.connect(url).get()
 
   val title: String = doc.title()
 

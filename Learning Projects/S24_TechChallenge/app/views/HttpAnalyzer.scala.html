@@ -1,4 +1,4 @@
-@(form: Form[WebsiteForm.Data], postUrl: Call)(implicit request: MessagesRequestHeader) @*Template constructor. Parameters can be used throughout the template*@
+@(analysisData: Option[Webpage], form: Form[WebsiteForm.Data], postUrl: Call)(implicit request: MessagesRequestHeader) @*Template constructor. Parameters can be used throughout the template*@
 @main("HTTP-Analyzer") {
 
 
@@ -9,18 +9,19 @@
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav mr-auto">
-      </ul>
+      <ul class="navbar-nav mr-auto"></ul>
       @navbarForm(form, postUrl)
     </div>
   </nav>
+
   @* Flash shows updates to a page *@
   @request.flash.data.map { case (name, value) =>
-    @*<div>@name: @value</div>*@
   <div class="alert alert-success" role="alert">
     @value
   </div>
   }
 
-
+  <h4>Webpage Analysis</h4>
+  <p>Pagetitle: @analysisData.fold("")(x => x.title)</p>
+  <p>HTML Version: @analysisData.fold("")(page => page.html_version.value)</p>
 }
