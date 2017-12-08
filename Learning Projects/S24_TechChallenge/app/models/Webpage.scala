@@ -1,5 +1,7 @@
 package models
 
+import java.net.URI
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.{Document, DocumentType}
 
@@ -9,6 +11,14 @@ class Webpage(url: String) {
   private val doc: Document = Jsoup.connect(url).get()
 
   val title: String = doc.title()
+
+  val location: String = doc.location()
+
+  val domainName: String = {
+    val uri = new URI(this.location)
+    val domain = uri.getHost
+    if (domain.startsWith("www.")) domain.substring(4) else domain
+  }
 
   val headings: Map[String, Int] = {
     val allHeadings = doc
