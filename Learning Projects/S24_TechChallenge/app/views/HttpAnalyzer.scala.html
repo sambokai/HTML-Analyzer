@@ -13,7 +13,6 @@
       @navbarForm(form, postUrl)
     </div>
   </nav>
-
   @* Flash shows updates to a page *@
   @request.flash.data.map { case (name, value) =>
   <div class="alert alert-success" role="alert">
@@ -21,7 +20,20 @@
   </div>
   }
 
-  <h4>Webpage Analysis</h4>
-  <p>Pagetitle: @analysisData.fold("")(x => x.title)</p>
-  <p>HTML Version: @analysisData.fold("")(page => page.html_version.value)</p>
+  <table class="table .table-hover">
+    <thead>
+      <tr>
+        <th scope="col"></th>
+        <th scope="col">Title</th>
+        <th scope="col">HTML Version</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row"></th>
+        <td>@analysisData.fold("")(x => x.title)</td>
+        <td>@analysisData.fold("")(page => page.html_version.value)</td>
+      </tr>
+    </tbody>
+  </table>
 }
