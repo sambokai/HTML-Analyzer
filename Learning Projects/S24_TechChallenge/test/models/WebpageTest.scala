@@ -20,6 +20,21 @@ class WebpageTest extends PlaySpec {
       testpage.title mustBe "Example Domain"
     }
 
+
+    "retrieve the resolved full url from where the document is served" in {
+      val testurl = "http://example.com/"
+      val testpage = new Webpage(testurl)
+
+      testpage.location mustBe testurl
+    }
+
+    "retrieve the domain name from where the document is served" in {
+      val testurl = "https://en.wikipedia.org/wiki/Shrek"
+      val testpage = new Webpage(testurl)
+
+      testpage.domainName mustBe "en.wikipedia.org"
+    }
+
     "determine the count of html-heading-tags by heading level " in {
       val testurl = "http://example.com/"
       val testpage = new Webpage(testurl)

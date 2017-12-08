@@ -1,7 +1,5 @@
 @(analysisData: Option[Webpage], form: Form[WebsiteForm.Data], postUrl: Call)(implicit request: MessagesRequestHeader) @*Template constructor. Parameters can be used throughout the template*@
 @main("HTTP-Analyzer") {
-
-
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="#">HTTP-Analyzer</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,10 +18,14 @@
   </div>
   }
 
-  <table class="table .table-hover">
+  <table class="table table-hover table-bordered">
     <thead>
       <tr>
-        <th scope="col"></th>
+        @*<th scope="col"></th>*@
+        <th scope="col">
+          Domain
+          <small class="text-muted">Hover for Full URL</small>
+        </th>
         <th scope="col">Title</th>
         <th scope="col">HTML Version</th>
         @* TODO: Sort heading columns from low to high *@
@@ -34,7 +36,14 @@
     </thead>
     <tbody>
       <tr>
-        <th scope="row"></th>
+        @*<th scope="row"></th>*@
+        <td>
+          <a data-toggle="tooltip" href="@{
+            analysisData.fold("")(x => x.location)
+          }" title="@analysisData.fold("")(x => x.location)">
+          @analysisData.fold("")(x => x.domainName)
+          </a>
+        </td>
         <td>@analysisData.fold("")(x => x.title)</td>
         <td>@analysisData.fold("")(page => page.html_version.value)</td>
         @for((headingLevel, count) <- analysisData.fold(Map.empty[String, Int])(x => x.headings)) {
@@ -44,3 +53,4 @@
     </tbody>
   </table>
 }
+
