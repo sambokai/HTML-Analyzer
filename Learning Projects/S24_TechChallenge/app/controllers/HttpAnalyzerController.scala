@@ -12,6 +12,7 @@ class HttpAnalyzerController @Inject()(messagesAction: MessagesActionBuilder, co
   private val postUrl = routes.HttpAnalyzerController.post()
 
   private var websiteAnalysis: Option[Webpage] = None
+  // TODO: save list of analyzed websites, in order to show the history of analyzed sites as a list on the frontend
 
   def index = messagesAction { implicit request: MessagesRequest[AnyContent] =>
     Ok(views.html.HttpAnalyzer(websiteAnalysis, form, postUrl))

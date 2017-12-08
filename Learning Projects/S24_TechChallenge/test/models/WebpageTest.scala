@@ -20,6 +20,14 @@ class WebpageTest extends PlaySpec {
       testpage.title mustBe "Example Domain"
     }
 
+    "determine the count of html-heading-tags by heading level " in {
+      val testurl = "http://example.com/"
+      val testpage = new Webpage(testurl)
+
+      val headings = testpage.headings
+
+      headings("h1") mustBe 1
+    }
 
     "detect html version 5 in a webpage" in {
       val testurl = "http://example.com/"
