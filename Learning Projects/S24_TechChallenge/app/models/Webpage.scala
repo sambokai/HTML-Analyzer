@@ -1,18 +1,22 @@
 package models
 
-import java.net.URI
+import java.io.InputStream
+import java.net.{URI, URL}
 
 import org.jsoup.Jsoup
-import org.jsoup.nodes.{Document, DocumentType}
+import org.jsoup.nodes._
 
 import scala.collection.JavaConverters._
 
-class Webpage(url: String) {
-  private val doc: Document = Jsoup.connect(url).get()
+class Webpage(val doc: Document) {
 
-  val title: String = doc.title()
+  def this(url: URL) = this(Jsoup.connect(url.toString).get())
 
-  val location: String = doc.location()
+  def this(input: InputStream, baseUri: String) = this(Jsoup.parse(input, null, baseUri))
+
+  val location: String = this.doc.location()
+
+  val title: String = this.doc.title()
 
   val domainName: String = {
     val uri = new URI(this.location)
