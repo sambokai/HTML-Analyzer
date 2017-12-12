@@ -2,19 +2,19 @@ package models
 
 case class HTMLVersion(value: String)
 
-object HTMLVersion {
+private[models] object HTMLVersion {
 
-  object HTML5 extends HTMLVersion("HTML5")
+  val HTML5 = HTMLVersion("HTML5")
 
-  object HTML4_01 extends HTMLVersion("HTML 4.01")
+  val HTML4_01 = HTMLVersion("HTML 4.01")
 
-  object XHTML1_0 extends HTMLVersion("XHTML 1.0")
+  val XHTML1_0 = HTMLVersion("XHTML 1.0")
 
-  object XHTMLDTD1_1 extends HTMLVersion("XHTML 1.1 - DTD")
+  val XHTMLDTD1_1 = HTMLVersion("XHTML 1.1 - DTD")
 
-  object XHTMLBasic1_1 extends HTMLVersion("XHTML Basic 1.1")
+  val XHTMLBasic1_1 = HTMLVersion("XHTML Basic 1.1")
 
-  object Unknown extends HTMLVersion("Unknown HTML Version")
+  val Unknown = HTMLVersion("Unknown HTML Version")
 
   val values = Seq(HTML5, HTML4_01, XHTML1_0, XHTMLDTD1_1, XHTMLBasic1_1, Unknown)
 }

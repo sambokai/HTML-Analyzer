@@ -3,11 +3,12 @@ package models
 import java.io.InputStream
 import java.net.URL
 
+import models.HTMLVersion._
 import org.scalatestplus.play.PlaySpec
 import play.api.Environment
 
 
-object testWebsites {
+private[models] object testWebsites {
 
   case class testWebsite(filePath: String, baseUri: String)
 
@@ -66,17 +67,17 @@ class WebpageTest extends PlaySpec {
 
     "detect html version 5 in a webpage" in {
       val testpage = webpageFromResource(gitHubLogin)
-      testpage.html_version mustBe HTMLVersion.HTML5
+      testpage.html_version mustBe HTML5
     }
 
     "detect html version 4.1 in a webpage" in {
       val testpage = webpageFromResource(w3c_html4_01_spec)
-      testpage.html_version mustBe HTMLVersion.HTML4_01
+      testpage.html_version mustBe HTML4_01
     }
 
     "detect unknown html version / missing version-string in a webpage" in {
       val testpage = webpageFromResource(ieIsEvil_html4_00)
-      testpage.html_version mustBe HTMLVersion.Unknown
+      testpage.html_version mustBe Unknown
     }
 
   }
