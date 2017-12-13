@@ -7,6 +7,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes._
 
 import scala.collection.JavaConverters._
+import scala.collection.immutable.ListMap
 import scala.collection.mutable
 
 class Webpage(doc: Document) {
@@ -25,13 +26,13 @@ class Webpage(doc: Document) {
     if (domain.startsWith("www.")) domain.substring(4) else domain
   }
 
-  val headings: Map[String, Int] = {
+  val headings: ListMap[String, Int] = {
     val allHeadings = doc
       .select("h0, h1, h2, h3, h4, h5, h6")
       .asScala
       .map(_.tag().getName)
 
-    allHeadings.groupBy(identity).mapValues(_.size)
+    ListMap(allHeadings.groupBy(identity).mapValues(_.size).toSeq.sortWith(_._1 < _._1): _*)
   }
 
   val hyperlinks: Map[Boolean, mutable.Buffer[String]] = {
