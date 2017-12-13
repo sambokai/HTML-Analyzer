@@ -80,11 +80,11 @@ class WebpageTest extends PlaySpec {
 
     "detect # of internal links and # of external links in a webpage" in {
       val spiegelPage = webpageFromResource(spiegelLogin)
+      val wikiPage = webpageFromResource(obama_wiki)
 
       spiegelPage.hyperlinks(true).size mustBe 245
       spiegelPage.hyperlinks(false).size mustBe 76
 
-      val wikiPage = webpageFromResource(obama_wiki)
 
       wikiPage.hyperlinks(true).size mustBe 3994
       wikiPage.hyperlinks(false).size mustBe 1092
