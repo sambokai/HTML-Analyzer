@@ -28,6 +28,8 @@
         </th>
         <th scope="col">Title</th>
         <th scope="col">HTML Version</th>
+
+        <th scope="col">@analysisData.fold("")(page => "Has Login Form")</th>
         @for(x <- analysisData) {
           @{
             if(x.hyperlinks.contains(true)) <th scope="col">Int. Links</th>
@@ -54,7 +56,8 @@
           </a>
         </td>
         <td>@analysisData.fold("")(x => x.title)</td>
-        <td>@analysisData.fold("")(page => page.html_version.value)</td>
+        <td>@analysisData.fold("Not Sure")(page => page.html_version.value)</td>
+        <td>@analysisData.fold("")(page => if(page.hasLoginForm) "Yes" else "No")</td>
         @for(x <- analysisData) {
           @if(x.hyperlinks.contains(true)) {
             <td>@x.hyperlinks(true).size</td>

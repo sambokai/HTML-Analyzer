@@ -17,6 +17,7 @@ private[models] object testWebsites {
   val w3c_html4_01_spec = testWebsite("WebsiteSnapshots/W3C_recommendation_HTML4-01Specification_12122017.htm", "https://www.w3.org/TR/1999/REC-html401-19991224/")
   val ieIsEvil_html4_00 = testWebsite("WebsiteSnapshots/InternetExplorer-Is-Evil_12122017.htm", "http://toastytech.com/evil/")
   val obama_wiki = testWebsite("WebsiteSnapshots/BarackObama_Wikipedia_13122017.htm", "https://en.wikipedia.org/wiki/Barack_Obama")
+  val linkedin_loginAndSignup = testWebsite("WebsiteSnapshots/linkedin_loginandsignup_13122017.htm", "https://www.linkedin.com")
 
   def webpageFromResource(website: testWebsite): Webpage = {
     val testpath: InputStream = Environment.simple().classLoader.getResource(website.filePath).openStream()
@@ -48,6 +49,19 @@ class WebpageTest extends PlaySpec {
       testpage.title mustBe "Sign in to GitHub · GitHub"
     }
 
+    "detect if a page contains a login form" in {
+      val testpage = webpageFromResource(gitHubLogin)
+      val falsetest = webpageFromResource(ieIsEvil_html4_00)
+
+      testpage.hasLoginForm mustBe true
+      falsetest.hasLoginForm mustBe false
+    }
+
+    "detect if a page with signup AND login contains a login" in {
+      val signupAndLoginPage = webpageFromResource(linkedin_loginAndSignup)
+
+      signupAndLoginPage.hasLoginForm mustBe true
+    }
 
     "retrieve the resolved full url from where the document is served" in {
       val testpage = webpageFromResource(gitHubLogin)
@@ -74,8 +88,12 @@ class WebpageTest extends PlaySpec {
     }
 
     "determine the count of html-heading-tags by heading level " in {
-      val testpage = webpageFromResource(gitHubLogin)
+      val testpage = webpageFromResource(obama_wiki)
       testpage.headings("h1") mustBe 1
+      testpage.headings("h2") mustBe 12
+      testpage.headings("h3") mustBe 31
+      testpage.headings("h4") mustBe 26
+      testpage.headings("h5") mustBe 2
     }
 
     "detect html version 5 in a webpage" in {

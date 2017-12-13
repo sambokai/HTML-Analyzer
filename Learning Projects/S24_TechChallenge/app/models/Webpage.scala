@@ -37,6 +37,7 @@ class Webpage(doc: Document) {
   val hyperlinks: Map[Boolean, mutable.Buffer[String]] = {
 
     def isInternal(link: String): Boolean = {
+      //TODO: IP adresses are not considered in this implementation. e.g. 124.512.152.124 may be an external link
       val httpPrefix = s"^(https?:\\/\\/)".r
       val fullPattern = s"^(https?:\\/\\/)?(www.)?($domainName)(\\/.*)?$$".r
 
@@ -54,6 +55,8 @@ class Webpage(doc: Document) {
       .map(_.attributes.get("href"))
       .groupBy(isInternal)
   }
+
+  val hasLoginForm: Boolean = doc.select("form").asScala.exists(elem => elem.select("[type=password]").size == 1)
 
   val html_version: HTMLVersion = {
     val doctypeInDOM = {
