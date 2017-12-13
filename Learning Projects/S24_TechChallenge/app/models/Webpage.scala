@@ -7,8 +7,9 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes._
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
-class Webpage(val doc: Document) {
+class Webpage(doc: Document) {
 
   def this(url: URL) = this(Jsoup.connect(url.toString).get())
 
@@ -31,6 +32,27 @@ class Webpage(val doc: Document) {
       .map(_.tag().getName)
 
     allHeadings.groupBy(identity).mapValues(_.size)
+  }
+
+  val hyperlinks: Map[Boolean, mutable.Buffer[String]] = {
+
+    def isInternal(link: String): Boolean = {
+      val httpPrefix = s"^(https?:\\/\\/)".r
+      val fullPattern = s"^(https?:\\/\\/)?(www.)?($domainName)(\\/.*)?$$".r
+
+      if (httpPrefix.findPrefixOf(link).isDefined) {
+        fullPattern.findFirstIn(link).isDefined
+      } else {
+        true
+      }
+    }
+
+    doc
+      .body
+      .select("a")
+      .asScala
+      .map(_.attributes.get("href"))
+      .groupBy(isInternal)
   }
 
   val html_version: HTMLVersion = {

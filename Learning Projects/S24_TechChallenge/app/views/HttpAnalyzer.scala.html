@@ -28,6 +28,15 @@
         </th>
         <th scope="col">Title</th>
         <th scope="col">HTML Version</th>
+        @for(x <- analysisData) {
+          @{
+            if(x.hyperlinks.contains(true)) <th scope="col">Int. Links</th>
+          }
+          @{
+            if(x.hyperlinks.contains(false)) <th scope="col">Ext. Links</th>
+          }
+        }
+
         @* TODO: Sort heading columns from low to high *@
         @for((headingLevel, count) <- analysisData.fold(Map.empty[String, Int])(x => x.headings)) {
           <th scope="col">@headingLevel.toString</th>
@@ -46,6 +55,16 @@
         </td>
         <td>@analysisData.fold("")(x => x.title)</td>
         <td>@analysisData.fold("")(page => page.html_version.value)</td>
+        @for(x <- analysisData) {
+          @if(x.hyperlinks.contains(true)) {
+            <td>@x.hyperlinks(true).size</td>
+          }
+          @if(x.hyperlinks.contains(false)) {
+            <td>@x.hyperlinks(false).size</td>
+          }
+
+        }
+
         @for((headingLevel, count) <- analysisData.fold(Map.empty[String, Int])(x => x.headings)) {
           <td>@count.toString</td>
         }
