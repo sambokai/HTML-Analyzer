@@ -1,7 +1,7 @@
 package models
 
 import java.io.InputStream
-import java.net.{URI, URL}
+import java.net.URI
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes._
@@ -11,7 +11,7 @@ import scala.collection.mutable
 
 class Webpage(doc: Document) {
 
-  def this(url: URL) = this(Jsoup.connect(url.toString).get())
+  def this(urlWrap: UrlWrapper) = this(Jsoup.connect(urlWrap.url.toString).get())
 
   def this(input: InputStream, baseUri: String) = this(Jsoup.parse(input, null, baseUri))
 

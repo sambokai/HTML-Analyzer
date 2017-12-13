@@ -1,10 +1,9 @@
 package controllers
 
-import java.net.URL
 import javax.inject.{Inject, Singleton}
 
 import controllers.WebsiteForm._
-import models.Webpage
+import models.{UrlWrapper, Webpage}
 import play.api.data.Form
 import play.api.mvc._
 
@@ -28,7 +27,7 @@ class HttpAnalyzerController @Inject()(messagesAction: MessagesActionBuilder, co
     }
 
     val successFunction = { data: Data =>
-      websiteAnalysis = Some(new Webpage(new URL(data.url)))
+      websiteAnalysis = Some(new Webpage(new UrlWrapper(data.url)))
       Redirect(routes.HttpAnalyzerController.index())
       //        .flashing("info" -> "Website analyzed.")
     }

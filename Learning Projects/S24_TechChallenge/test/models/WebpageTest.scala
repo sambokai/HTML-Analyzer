@@ -1,7 +1,6 @@
 package models
 
 import java.io.InputStream
-import java.net.URL
 
 import models.HTMLVersion._
 import org.scalatestplus.play.PlaySpec
@@ -37,11 +36,15 @@ class WebpageTest extends PlaySpec {
       webpageFromResource(gitHubLogin)
     }
 
-    "Retrieve a webpage document from network via URL" in {
-      val testurl = new URL("http://example.com/")
+    "Retrieve a webpage document from network via full protocol-prefixed URL" in {
+      val testurl = new UrlWrapper("http://example.com/")
       new Webpage(testurl)
     }
 
+    "retrieve a webpage document from network via shortened, non-protocol URL" in {
+      val testurl = new UrlWrapper("example.com")
+      new Webpage(testurl)
+    }
 
     "retrieve the page title of a webpage" in {
       val testpage = webpageFromResource(gitHubLogin)
