@@ -29,7 +29,6 @@ class HttpAnalyzerController @Inject()(messagesAction: MessagesActionBuilder, co
     val successFunction = { data: Data =>
       websiteAnalysis = Some(new Webpage(new UrlWrapper(data.url)))
       Redirect(routes.HttpAnalyzerController.index())
-      //        .flashing("info" -> "Website analyzed.")
     }
 
     val formValidationResult = form.bindFromRequest

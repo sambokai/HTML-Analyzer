@@ -11,13 +11,6 @@
       @navbarForm(form, postUrl)
     </div>
   </nav>
-  @* Flash shows updates to a page *@
-  @request.flash.data.map { case (name, value) =>
-  <div class="alert alert-success" role="alert">
-    @value
-  </div>
-  }
-
   <table class="table table-hover table-bordered">
     <thead>
       <tr>
