@@ -32,7 +32,6 @@
           }
         }
 
-        @* TODO: Sort heading columns from low to high *@
         @for((headingLevel, count) <- analysisData.fold(Map.empty[String, Int])(x => x.headings)) {
           <th scope="col">@headingLevel.toString</th>
         }
