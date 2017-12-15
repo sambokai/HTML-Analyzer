@@ -11,27 +11,23 @@ import play.api.mvc._
 class HtmlAnalyzerController @Inject()(messagesAction: MessagesActionBuilder, components: ControllerComponents) extends AbstractController(components) {
   private val postUrl = routes.HtmlAnalyzerController.post()
 
-  private var websiteAnalysis: Option[Webpage] = None
   // TODO: save list of analyzed websites, in order to show the history of analyzed sites as a list on the frontend
 
   def index = messagesAction { implicit request: MessagesRequest[AnyContent] =>
-    Ok(views.html.HtmlAnalyzer(websiteAnalysis, form, postUrl))
+    Ok(views.html.HtmlAnalyzer(None, form, postUrl))
   }
 
   def post = messagesAction { implicit request: MessagesRequest[AnyContent] =>
 
-    val errorFunction = { formWithErrors: Form[Data] =>
-      println("Error: " + formWithErrors) // Debug
-      websiteAnalysis = None
-      BadRequest(views.html.HtmlAnalyzer(websiteAnalysis, formWithErrors, postUrl))
+    def errorFunction = { formWithErrors: Form[Data] =>
+      BadRequest(views.html.HtmlAnalyzer(None, formWithErrors, postUrl))
     }
 
-    val successFunction = { data: Data =>
-      websiteAnalysis = Some(new Webpage(new UrlWrapper(data.url)))
-      Redirect(routes.HtmlAnalyzerController.index())
+    def successFunction = { data: Data =>
+      Ok(views.html.HtmlAnalyzer(Some(new Webpage(new UrlWrapper(data.url))), form, postUrl))
     }
 
-    val formValidationResult = form.bindFromRequest
+    def formValidationResult = form.bindFromRequest
     formValidationResult.fold(errorFunction, successFunction)
   }
 }
