@@ -1,4 +1,6 @@
-@(analysisData: Option[Webpage], form: Form[WebsiteForm.Data], postUrl: Call)(implicit request: MessagesRequestHeader) @*Template constructor. Parameters can be used throughout the template*@
+@
+import domain.WebPage
+@(analysisData: Option[WebPage], form: Form[WebsiteForm.Data], postUrl: Call)( implicit request: MessagesRequestHeader) @*Template constructor. Parameters can be used throughout the template*@
   @main("HTML-Analyzer") {
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
       <a class="navbar-brand" href="/">HTML-Analyzer</a>
@@ -69,4 +71,3 @@
       </table>
     }
   }
-

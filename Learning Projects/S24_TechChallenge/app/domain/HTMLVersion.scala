@@ -1,8 +1,8 @@
-package models
+package domain
 
 case class HTMLVersion(value: String)
 
-private[models] object HTMLVersion {
+object HTMLVersion {
 
   val HTML5 = HTMLVersion("HTML5")
 
