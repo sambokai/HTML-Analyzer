@@ -7,9 +7,9 @@ case class WebPage(
 
                     domainName: String,
 
-                    headings: scala.collection.immutable.ListMap[String, Int],
+                    headings: Seq[(String, Int)],
 
-                    hyperlinks: Map[Boolean, scala.collection.mutable.Buffer[String]],
+                    hyperlinks: Map[Boolean, Seq[String]],
 
                     hasLoginForm: Boolean,
 
