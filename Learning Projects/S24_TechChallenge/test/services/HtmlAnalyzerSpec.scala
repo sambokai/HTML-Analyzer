@@ -9,7 +9,6 @@ import services.HtmlAnalyzer._
 import utils.TestDocumentRetriever._
 
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.Future
 
 class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeout {
 
@@ -53,6 +52,20 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
 
         await(analyzer.analyze(noContentHtmlFile.filePath)) shouldBe emptyPage
       }
+
+      "analyze an empty file and return the result inside a WebPage object" in new WithHtmlAnalyzer {
+        val emptyFilePage = WebPage(
+          "http://www.test.com/testfolder/testfile?testquery=123",
+          "",
+          "test.com",
+          List(),
+          Map(),
+          hasLoginForm = false,
+          HTMLVersion.Unknown
+        )
+        await(analyzer.analyze(emptyFile.filePath)) shouldBe emptyFilePage
+      }
+
     }
 
     "provide a getHtmlVersion method which" should {

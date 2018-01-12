@@ -8,9 +8,9 @@ import domain.{HTMLVersion, WebPage}
 import org.jsoup.Jsoup
 import org.jsoup.nodes.{Document, DocumentType}
 import services.HtmlAnalyzer._
-import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @ImplementedBy(classOf[UrlRetriever])
@@ -49,13 +49,17 @@ class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
 
     doctypeInDOM.map {
       documentType =>
-        documentType.attributes.get("publicId") match {
-          case html5pattern() => HTMLVersion.HTML5
-          case html401pattern() => HTMLVersion.HTML4_01
-          case xhtml10pattern() => HTMLVersion.XHTML1_0
-          case dtdxhtml11pattern() => HTMLVersion.XHTMLDTD1_1
-          case basicxhtml11pattern() => HTMLVersion.XHTMLBasic1_1
-          case _ => HTMLVersion.Unknown
+        val attributes = documentType.attributes
+        attributes.get("name") match {
+          case "html" => attributes.get("publicId") match {
+            case html5pattern() => HTMLVersion.HTML5
+            case html401pattern() => HTMLVersion.HTML4_01
+            case xhtml10pattern() => HTMLVersion.XHTML1_0
+            case dtdxhtml11pattern() => HTMLVersion.XHTMLDTD1_1
+            case basicxhtml11pattern() => HTMLVersion.XHTMLBasic1_1
+            case _ => HTMLVersion.Unknown
+          }
+          case _ => HTMLVersion.Unknown //TODO: Make method throw InvalidFileException("Not an HTML File") if necessary
         }
     }.getOrElse(HTMLVersion.Unknown)
   }
