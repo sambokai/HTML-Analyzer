@@ -7,6 +7,7 @@ import com.google.inject.ImplementedBy
 import domain.{HTMLVersion, WebPage}
 import org.jsoup.Jsoup
 import org.jsoup.nodes.{Document, DocumentType}
+import services.HtmlAnalyzer.LinkType
 
 import scala.collection.JavaConverters._
 
@@ -74,7 +75,7 @@ class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
     Seq(allHeadings.groupBy(identity).mapValues(_.size).toSeq.sortWith(_._1 < _._1): _*)
   }
 
-  private[services] def getHyperlinks(doc: Document): Map[Boolean, Seq[String]] = {
+  private[services] def getHyperlinks(doc: Document): Map[LinkType, Seq[String]] = {
     val domainName = getDomainName(doc)
 
     doc
@@ -92,4 +93,11 @@ class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
 
     if (httpPrefix.findPrefixOf(link).isDefined) fullPattern.findFirstIn(link).isDefined else true
   }
+}
+
+object HtmlAnalyzer {
+  type LinkType = Boolean
+
+  val InternalLink = true
+  val ExternalLink = false
 }

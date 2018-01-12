@@ -1,8 +1,10 @@
 package services
 
-import domain.HTMLVersion
+import domain.HTMLVersion._
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
+import services.HtmlAnalyzer._
+import utils.TestDocumentRetriever._
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -16,71 +18,76 @@ class HtmlAnalyzerSpec extends WordSpec {
     val analyzer = new HtmlAnalyzer(testDocumentRetriever)
   }
 
-  "getHtmlVersion()" should {
-    "detect if a website has an unknown html type" in new WithHtmlAnalyzer {
-      analyzer.getHtmlVersion(testDocumentRetriever.get(ieIsEvil_html4_00.filePath)) shouldBe HTMLVersion.Unknown
+  "HtmlAnalyzer" can {
+    "provide a getHtmlVersion method which" should {
+      "detect if a website has an unknown html type" in new WithHtmlAnalyzer {
+        analyzer.getHtmlVersion(testDocumentRetriever.get(ieIsEvil_html4_00.filePath)) shouldBe Unknown
+      }
+
+      "detect an HTML5 Page" in new WithHtmlAnalyzer {
+        analyzer.getHtmlVersion(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe HTML5
+      }
+
+
+      "detect an HTML4.01 Page" in new WithHtmlAnalyzer {
+        analyzer.getHtmlVersion(testDocumentRetriever.get(w3c_html4_01_spec.filePath)) shouldBe HTML4_01
+      }
     }
 
-    "detect an HTML5 Page" in new WithHtmlAnalyzer {
-      analyzer.getHtmlVersion(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe HTMLVersion.HTML5
+    "provide a checkForLoginForm method which" should {
+      "detect that a page does NOT have a Login Form" in new WithHtmlAnalyzer {
+        analyzer.checkForLoginForm(testDocumentRetriever.get(obama_wiki.filePath)) shouldBe false
+      }
+
+      "detect a page that only contains a single login form" in new WithHtmlAnalyzer {
+        analyzer.checkForLoginForm(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe true
+      }
+
+      "detect a page that contains both login form and register form" in new WithHtmlAnalyzer {
+        analyzer.checkForLoginForm(testDocumentRetriever.get(linkedin_loginAndSignup.filePath)) shouldBe true
+      }
     }
 
-
-    "detect an HTML4.01 Page" in new WithHtmlAnalyzer {
-      analyzer.getHtmlVersion(testDocumentRetriever.get(w3c_html4_01_spec.filePath)) shouldBe HTMLVersion.HTML4_01
-    }
-  }
-
-  "checkForLoginForm()" should {
-    "detect that a page does NOT have a Login Form" in new WithHtmlAnalyzer {
-      analyzer.checkForLoginForm(testDocumentRetriever.get(obama_wiki.filePath)) shouldBe false
+    "provide a getDomainName method which" should {
+      "detect the domainname of a webpage" in new WithHtmlAnalyzer {
+        analyzer.getDomainName(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe testBaseDomainName
+      }
     }
 
-    "detect a login-only page" in new WithHtmlAnalyzer {
-      analyzer.checkForLoginForm(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe true
+    "provide a getHeadings method which" should {
+      "count occurence of html-headings grouped by heading-level" in new WithHtmlAnalyzer {
+        analyzer.getHeadings(testDocumentRetriever.get(obama_wiki.filePath)) shouldBe List(
+          ("h1", 1),
+          ("h2", 12),
+          ("h3", 31),
+          ("h4", 26),
+          ("h5", 2)
+        )
+      }
+
+      //TODO: test no link
     }
 
-    "detect a login-AND-register page" in new WithHtmlAnalyzer {
-      analyzer.checkForLoginForm(testDocumentRetriever.get(linkedin_loginAndSignup.filePath)) shouldBe true
+    "provide a getHyperlinks which" should {
+      "return all hyperlinks in the webpage, grouped by whether they link to an internal or external location" in new WithHtmlAnalyzer {
+        analyzer.getHyperlinks(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe Map(
+          ExternalLink -> ArrayBuffer(
+            "https://github.com/",
+            "https://github.com/site/terms",
+            "https://github.com/site/privacy",
+            "https://github.com/security",
+            "https://github.com/contact"
+          ),
+          InternalLink -> ArrayBuffer(
+            "#start-of-content",
+            "/password_reset",
+            "/join?source=login",
+            "",
+            "")
+        )
+      }
     }
-  }
 
-  "getDomainName()" should {
-    "detect the domainname of a webpage" in new WithHtmlAnalyzer {
-      analyzer.getDomainName(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe TestDocumentRetriever.testBaseDomainName
-    }
-  }
-
-  "getHeadings()" should {
-    "count occurence of html-headings grouped by heading-level" in new WithHtmlAnalyzer {
-      analyzer.getHeadings(testDocumentRetriever.get(obama_wiki.filePath)) shouldBe List(
-        ("h1", 1),
-        ("h2", 12),
-        ("h3", 31),
-        ("h4", 26),
-        ("h5", 2)
-      )
-    }
-  }
-
-  "getHyperlinks()" should {
-    "return all hyperlinks in the webpage, grouped by whether they link to an internal or external location" in new WithHtmlAnalyzer {
-      analyzer.getHyperlinks(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe Map(
-        false -> ArrayBuffer(
-          "https://github.com/",
-          "https://github.com/site/terms",
-          "https://github.com/site/privacy",
-          "https://github.com/security",
-          "https://github.com/contact"
-        ),
-        true -> ArrayBuffer(
-          "#start-of-content",
-          "/password_reset",
-          "/join?source=login",
-          "",
-          "")
-      )
-    }
   }
 
 }
