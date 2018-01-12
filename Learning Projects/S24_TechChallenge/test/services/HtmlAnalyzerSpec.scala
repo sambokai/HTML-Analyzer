@@ -103,5 +103,8 @@ object TestWebsite {
   val ieIsEvil_html4_00 = TestWebsite("/WebsiteSnapshots/InternetExplorer-Is-Evil_12122017.htm", "http://toastytech.com/evil/")
   val obama_wiki = TestWebsite("/WebsiteSnapshots/BarackObama_Wikipedia_13122017.htm", "https://en.wikipedia.org/wiki/Barack_Obama")
   val linkedin_loginAndSignup = TestWebsite("/WebsiteSnapshots/linkedin_loginandsignup_13122017.htm", "https://www.linkedin.com")
+  val corruptedHtmlFile = TestWebsite("/corruptedHtmlFile.html", "")
+  val emptyFile = TestWebsite("/emptyFile.html", "")
+  val noContentHtmlFile = TestWebsite("/noContentHtmlFile.html", "")
 }
 
