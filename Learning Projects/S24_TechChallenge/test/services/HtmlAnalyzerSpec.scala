@@ -20,11 +20,11 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
     val analyzer = new HtmlAnalyzer(testDocumentRetriever)
   }
 
-  "HtmlAnalyzer" can {
+  "HtmlAnalyzer" must {
 
     "provide an analyze method which" should {
 
-      "analyze an html page and return the result inside a WebPage object" in new WithHtmlAnalyzer {
+      "analyzes an html page and return the result inside a WebPage object" in new WithHtmlAnalyzer {
         val testPage = WebPage(
             location = "http://www.test.com/testfolder/testfile?testquery=123",
             title = "Sign in to GitHub · GitHub",
@@ -40,7 +40,7 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
         await(analyzer.analyze(gitHubLogin.filePath)) shouldBe testPage
       }
 
-      "analyze an html5 file that has no content and return the result inside a WebPage object" in new WithHtmlAnalyzer {
+      "analyzes an html5 file that has no content and return the result inside a WebPage object" in new WithHtmlAnalyzer {
         val emptyPage = WebPage("http://www.test.com/testfolder/testfile?testquery=123",
           "",
           "test.com",
@@ -53,7 +53,7 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
         await(analyzer.analyze(noContentHtmlFile.filePath)) shouldBe emptyPage
       }
 
-      "analyze an empty file and return the result inside a WebPage object" in new WithHtmlAnalyzer {
+      "analyzes an empty file and return the result inside a WebPage object" in new WithHtmlAnalyzer {
         val emptyFilePage = WebPage(
           "http://www.test.com/testfolder/testfile?testquery=123",
           "",
@@ -66,7 +66,7 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
         await(analyzer.analyze(emptyFile.filePath)) shouldBe emptyFilePage
       }
 
-      "analyze an invalid/corrupted html file and return the result inside a WebPage object" in new WithHtmlAnalyzer {
+      "analyzes an invalid/corrupted html file and return the result inside a WebPage object" in new WithHtmlAnalyzer {
         val corruptedFilePage = WebPage(
           "http://www.test.com/testfolder/testfile?testquery=123",
           "",
@@ -81,43 +81,43 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
 
     }
 
-    "provide a getHtmlVersion method which" should {
-      "detect if a website has an unknown html type" in new WithHtmlAnalyzer {
+    "provides a getHtmlVersion method which" should {
+      "detects if a website has an unknown html type" in new WithHtmlAnalyzer {
         analyzer.getHtmlVersion(testDocumentRetriever.get(ieIsEvil_html4_00.filePath)) shouldBe Unknown
       }
 
-      "detect an HTML5 Page" in new WithHtmlAnalyzer {
+      "detects an HTML5 Page" in new WithHtmlAnalyzer {
         analyzer.getHtmlVersion(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe HTML5
       }
 
 
-      "detect an HTML4.01 Page" in new WithHtmlAnalyzer {
+      "detects an HTML4.01 Page" in new WithHtmlAnalyzer {
         analyzer.getHtmlVersion(testDocumentRetriever.get(w3c_html4_01_spec.filePath)) shouldBe HTML4_01
       }
     }
 
-    "provide a checkForLoginForm method which" should {
-      "detect that a page does NOT have a Login Form" in new WithHtmlAnalyzer {
+    "provides a checkForLoginForm method which" should {
+      "detects that a page does NOT have a Login Form" in new WithHtmlAnalyzer {
         analyzer.checkForLoginForm(testDocumentRetriever.get(obama_wiki.filePath)) shouldBe false
       }
 
-      "detect a page that only contains a single login form" in new WithHtmlAnalyzer {
+      "detects a page that only contains a single login form" in new WithHtmlAnalyzer {
         analyzer.checkForLoginForm(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe true
       }
 
-      "detect a page that contains both login form and register form" in new WithHtmlAnalyzer {
+      "detects a page that contains both login form and register form" in new WithHtmlAnalyzer {
         analyzer.checkForLoginForm(testDocumentRetriever.get(linkedin_loginAndSignup.filePath)) shouldBe true
       }
     }
 
-    "provide a getDomainName method which" should {
-      "detect the domainname of a webpage" in new WithHtmlAnalyzer {
+    "provides a getDomainName method which" should {
+      "detects the domainname of a webpage" in new WithHtmlAnalyzer {
         analyzer.getDomainName(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe testBaseDomainName
       }
     }
 
     "provide a getHeadings method which" should {
-      "count occurence of html-headings grouped by heading-level" in new WithHtmlAnalyzer {
+      "counts occurence of html-headings grouped by heading-level" in new WithHtmlAnalyzer {
         analyzer.getHeadings(testDocumentRetriever.get(obama_wiki.filePath)) shouldBe List(
           ("h1", 1),
           ("h2", 12),
@@ -130,8 +130,8 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
       //TODO: test no link
     }
 
-    "provide a getHyperlinks which" should {
-      "return all hyperlinks in the webpage, grouped by whether they link to an internal or external location" in new WithHtmlAnalyzer {
+    "provides a getHyperlinks which" should {
+      "returns all hyperlinks in the webpage, grouped by whether they link to an internal or external location" in new WithHtmlAnalyzer {
         analyzer.getHyperlinks(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe Map(
           ExternalLink -> ArrayBuffer(
             "https://github.com/",
