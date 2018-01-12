@@ -66,6 +66,19 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
         await(analyzer.analyze(emptyFile.filePath)) shouldBe emptyFilePage
       }
 
+      "analyze an invalid/corrupted html file and return the result inside a WebPage object" in new WithHtmlAnalyzer {
+        val corruptedFilePage = WebPage(
+          "http://www.test.com/testfolder/testfile?testquery=123",
+          "",
+          "test.com",
+          List(),
+          Map(),
+          hasLoginForm = false,
+          HTMLVersion.Unknown
+        )
+        await(analyzer.analyze(corruptedHtmlFile.filePath)) shouldBe corruptedFilePage
+      }
+
     }
 
     "provide a getHtmlVersion method which" should {
