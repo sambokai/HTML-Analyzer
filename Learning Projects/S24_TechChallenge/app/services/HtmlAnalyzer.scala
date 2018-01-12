@@ -7,9 +7,11 @@ import com.google.inject.ImplementedBy
 import domain.{HTMLVersion, WebPage}
 import org.jsoup.Jsoup
 import org.jsoup.nodes.{Document, DocumentType}
-import services.HtmlAnalyzer.LinkType
+import services.HtmlAnalyzer._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.collection.JavaConverters._
+import scala.concurrent.Future
 
 @ImplementedBy(classOf[UrlRetriever])
 trait DocumentRetriever {
@@ -24,8 +26,8 @@ class UrlRetriever extends DocumentRetriever {
 @Singleton
 class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
 
-  def analyze(url: String): WebPage = {
-    val doc = documentRetriever.get(url)
+  def analyze(location: String): Future[WebPage] = Future {
+    val doc = documentRetriever.get(location)
     WebPage(doc.location(), doc.title(), getDomainName(doc), getHeadings(doc), getHyperlinks(doc), checkForLoginForm(doc), getHtmlVersion(doc))
   }
 

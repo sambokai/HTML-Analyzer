@@ -1,14 +1,17 @@
 package services
 
 import domain.HTMLVersion._
+import domain.{HTMLVersion, WebPage}
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
+import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import services.HtmlAnalyzer._
 import utils.TestDocumentRetriever._
 
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.Future
 
-class HtmlAnalyzerSpec extends WordSpec {
+class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeout {
 
   import TestWebsite._
   import utils.TestDocumentRetriever
@@ -19,6 +22,25 @@ class HtmlAnalyzerSpec extends WordSpec {
   }
 
   "HtmlAnalyzer" can {
+
+    "provide an analyze method which" should {
+
+      "analyze an html page and return the result inside a WebPage object" in new WithHtmlAnalyzer {
+        val testPage = WebPage(
+            location = "http://www.test.com/testfolder/testfile?testquery=123",
+            title = "Sign in to GitHub · GitHub",
+            domainName = "test.com",
+            headings = List(("h1", 1)),
+            hyperlinks = Map(
+              false -> ArrayBuffer("https://github.com/", "https://github.com/site/terms", "https://github.com/site/privacy", "https://github.com/security", "https://github.com/contact"),
+              true -> ArrayBuffer("#start-of-content", "/password_reset", "/join?source=login", "", "")),
+            hasLoginForm = true,
+            html_version = HTML5
+          )
+
+        await(analyzer.analyze(gitHubLogin.filePath)) shouldBe testPage
+      }
+
     "provide a getHtmlVersion method which" should {
       "detect if a website has an unknown html type" in new WithHtmlAnalyzer {
         analyzer.getHtmlVersion(testDocumentRetriever.get(ieIsEvil_html4_00.filePath)) shouldBe Unknown
