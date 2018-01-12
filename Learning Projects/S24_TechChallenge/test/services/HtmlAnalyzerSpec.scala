@@ -41,6 +41,20 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
         await(analyzer.analyze(gitHubLogin.filePath)) shouldBe testPage
       }
 
+      "analyze an html5 file that has no content and return the result inside a WebPage object" in new WithHtmlAnalyzer {
+        val emptyPage = WebPage("http://www.test.com/testfolder/testfile?testquery=123",
+          "",
+          "test.com",
+          List(),
+          Map(),
+          hasLoginForm = false,
+          HTMLVersion.HTML5
+        )
+
+        await(analyzer.analyze(noContentHtmlFile.filePath)) shouldBe emptyPage
+      }
+    }
+
     "provide a getHtmlVersion method which" should {
       "detect if a website has an unknown html type" in new WithHtmlAnalyzer {
         analyzer.getHtmlVersion(testDocumentRetriever.get(ieIsEvil_html4_00.filePath)) shouldBe Unknown
