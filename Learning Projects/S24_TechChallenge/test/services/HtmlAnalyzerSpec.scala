@@ -81,7 +81,7 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
 
     }
 
-    "provides a getHtmlVersion method which" should {
+    "provide a getHtmlVersion method which" should {
       "detects if a website has an unknown html type" in new WithHtmlAnalyzer {
         analyzer.getHtmlVersion(testDocumentRetriever.get(ieIsEvil_html4_00.filePath)) shouldBe Unknown
       }
@@ -96,7 +96,7 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
       }
     }
 
-    "provides a checkForLoginForm method which" should {
+    "provide a checkForLoginForm method which" should {
       "detects that a page does NOT have a Login Form" in new WithHtmlAnalyzer {
         analyzer.checkForLoginForm(testDocumentRetriever.get(obama_wiki.filePath)) shouldBe false
       }
@@ -110,7 +110,7 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
       }
     }
 
-    "provides a getDomainName method which" should {
+    "provide a getDomainName method which" should {
       "detects the domainname of a webpage" in new WithHtmlAnalyzer {
         analyzer.getDomainName(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe testBaseDomainName
       }
@@ -130,7 +130,7 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
       //TODO: test no link
     }
 
-    "provides a getHyperlinks which" should {
+    "provide a getHyperlinks which" should {
       "returns all hyperlinks in the webpage, grouped by whether they link to an internal or external location" in new WithHtmlAnalyzer {
         analyzer.getHyperlinks(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe Map(
           ExternalLink -> ArrayBuffer(
