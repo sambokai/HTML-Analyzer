@@ -7,7 +7,7 @@ object WebsiteForm {
 
   case class Data(url: String)
 
-  val form = Form(
+  val urlAnalysisForm = Form(
     mapping(
       "url" -> nonEmptyText
     )(Data.apply)(Data.unapply)

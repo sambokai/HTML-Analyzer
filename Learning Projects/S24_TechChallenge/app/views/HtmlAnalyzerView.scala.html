@@ -1,7 +1,8 @@
-@
-import domain.WebPage
-@(analysisData: Option[WebPage], form: Form[WebsiteForm.Data], postUrl: Call)(implicit request: MessagesRequestHeader) @*Template constructor. Parameters can be used throughout the template*@
+@import domain.WebPage
+@(analysisData: Option[WebPage], userForm: Form[WebsiteForm.Data], postUrl: Call)(implicit request: RequestHeader, messages: Messages)
+
 @main("HTML-Analyzer") {
+
   <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
     <a class="navbar-brand" href="/">HTML-Analyzer</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -10,66 +11,58 @@ import domain.WebPage
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto"></ul>
-      @navbarForm(form, postUrl)
+      @navbarForm(userForm, postUrl)
     </div>
   </nav>
-  @for(x <- analysisData) {
-    <table class="table table-hover table-bordered">
-      <thead>
-        <tr>
-          @*<th scope="col"></th>*@
+
+  @analysisData.map { result =>
+
+  <table class="table table-hover table-bordered">
+    <thead>
+      <tr>
         <th scope="col">
-            Domain
+              Domain
           <small class="text-muted">Hover for Full URL</small>
         </th>
         <th scope="col">Title</th>
         <th scope="col">HTML Version</th>
 
-        <th scope="col">@analysisData.fold("")(page => "Has Login Form")</th>
-          @for(x <- analysisData) {
-            @{
-              if(x.hyperlinks.contains(true)) <th scope="col">Int. Links</th>
-            }
-            @{
-              if(x.hyperlinks.contains(false)) <th scope="col">Ext. Links</th>
-            }
-          }
+        <th scope="col">Login Form</th>
 
-          @*
-          @for((headingLevel, count) <- analysisData.fold(Map.empty[String, Int])(x => x.headings)) {*@
-          @*<th scope="col">@headingLevel.toString</th>*@
-          @*}*@
+        @result.hyperlinks.map { hyperlink =>
+          @{
+            if(hyperlink._1) <th scope="col">Int. Links</th> else <th scope="col">Ext. Links</th>
+          }
+        }
+
+        @result.headings.map { heading =>
+          <th scope="col">@heading._1</th>
+        }
         </tr>
-      </thead>
-      <tbody>
-        <tr>
-          @*<th scope="row"></th>*@
+    </thead>
+    <tbody>
+      <tr>
         <td>
-          <a data-toggle="tooltip" href="@{
-            analysisData.fold("")(x => x.location)
-          }" title="@analysisData.fold("")(x => x.location)">
-          @analysisData.fold("")(x => x.domainName)
+          <a data-toggle="tooltip" href="@result.location" title="@result.location">
+          @result.domainName
           </a>
         </td>
-        <td>@analysisData.fold("")(x => x.title)</td>
-        <td>@analysisData.fold("")(page => page.html_version.value)</td>
-        <td>@analysisData.fold("")(page => if(page.hasLoginForm) "Yes" else "No")</td>
-          @for(x <- analysisData) {
-            @if(x.hyperlinks.contains(true)) {
-              <td>@x.hyperlinks(true).size</td>
-            }
-            @if(x.hyperlinks.contains(false)) {
-              <td>@x.hyperlinks(false).size</td>
-            }
+        <td>@result.title</td>
+        <td>@result.html_version.value</td>
+        <td>@{
+          if(result.hasLoginForm) "Yes" else "No"
+        }</td>
 
-          }
+        @result.hyperlinks.map { hyperlink =>
+          <td>@hyperlink._2.size</td>
+        }
 
-          @*
-          @for((headingLevel, count) <- analysisData.fold(Map.empty[String, Int])(x => x.headings)) {*@
-          @*<td>@count.toString</td>*@
-          @*}*@
-        </tr>
-      </tbody>
-    </table>
-  }
+        @result.headings.map { heading =>
+          <td>@heading._2.toString</td>
+        }
+      </tr>
+    </tbody>
+  </table>
+  }.getOrElse(None)
+
 }

@@ -1,16 +1,8 @@
-@import views.html.helper.FieldConstructor
-@(form: Form[WebsiteForm.Data], postUrl: Call)(implicit request: MessagesRequestHeader)
+@(form: Form[WebsiteForm.Data], postUrl: Call)(implicit request: RequestHeader, messages: Messages)
+
 @implicitField = @{
   helper.FieldConstructor(AnalyzeFormConstructorTemplate.f)
 }
-
-
-@*<form class="form-inline my-2 my-lg-0">
-<div class="form-group">
-<input class="form-control mr-sm-2" type="search" placeholder="eg. github.com/login" aria-label="Search">
-<button class="btn btn-outline-success my-2 my-sm-0" type="submit">Analyze</button>
-</div>
-</form>*@
 
 @helper.form(postUrl, 'class -> "form-inline my-2 my-lg-0") {
   @helper.CSRF.formField
