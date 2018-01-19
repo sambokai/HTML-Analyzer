@@ -1,6 +1,10 @@
-# Learning Scala
+# HTML Analyzer (Learning Project)
+My first Play!-Framework and Scala app. 
 
-## Resources
+HTML analysis tool built in Scala with Play Framework. Potential use for SEO.
+
+
+## Scala Learning Resources
 
 * [Twitter Scala School](https://twitter.github.io/scala_school/)
 * [Coursera Course Programming "Functional Programming Principles in Scala" by Martin Odersky](https://www.coursera.org/learn/progfun1/)

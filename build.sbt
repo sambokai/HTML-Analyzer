@@ -1,4 +1,4 @@
-name := "S24_TechChallenge"
+name := "HTML-Analyzer"
 
 version := "1.0-SNAPSHOT"
 
