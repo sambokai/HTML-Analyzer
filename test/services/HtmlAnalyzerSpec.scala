@@ -138,7 +138,6 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
         )
       }
 
-      //TODO: test no link
     }
 
     "provide a getHyperlinks which" should {
@@ -161,7 +160,6 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
       }
     }
 
-    //TODO: test nonvalid links
 
   }
 
