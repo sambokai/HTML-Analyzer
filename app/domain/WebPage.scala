@@ -1,5 +1,7 @@
 package domain
 
+import services.HtmlAnalyzer
+
 case class WebPage(
                     location: String,
 
@@ -9,7 +11,7 @@ case class WebPage(
 
                     headings: Seq[(String, Int)],
 
-                    hyperlinks: Map[Boolean, Seq[String]],
+                    hyperlinks: Map[HtmlAnalyzer.LinkType, Seq[String]],
 
                     hasLoginForm: Boolean,
 

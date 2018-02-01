@@ -7,11 +7,13 @@ import com.google.inject.ImplementedBy
 import domain.{HTMLVersion, WebPage}
 import org.jsoup.Jsoup
 import org.jsoup.nodes.{Document, DocumentType}
+import play.api.Logger
 import services.HtmlAnalyzer._
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.matching.Regex
 
 @ImplementedBy(classOf[UrlRetriever])
 trait DocumentRetriever {
@@ -26,12 +28,16 @@ class UrlRetriever extends DocumentRetriever {
 @Singleton
 class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
 
+
   def analyze(location: String): Future[WebPage] = Future {
     val doc = documentRetriever.get(location)
-    WebPage(doc.location(), doc.title(), getDomainName(doc), getHeadings(doc), getHyperlinks(doc), checkForLoginForm(doc), getHtmlVersion(doc))
+    val result = WebPage(doc.location(), doc.title(), getDomainName(doc), getHeadings(doc), getHyperlinks(doc), checkForLoginForm(doc), getHtmlVersion(doc))
+    Logger.info(s"Webpage analysis done for ${result.location} - (${result.title})")
+    result
   }
 
   private[services] def getHtmlVersion(doc: Document): HTMLVersion = {
+    import domain.HTMLVersion.HtmlVersionPatterns._
 
     val doctypeInDOM: Option[DocumentType] = {
       doc
@@ -41,17 +47,11 @@ class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
         .map(node => node.asInstanceOf[DocumentType])
     }
 
-    val html5pattern = "".r
-    val html401pattern = ".*4\\.01.*".r
-    val xhtml10pattern = ".*XHTML\\ss1\\.0.*".r
-    val dtdxhtml11pattern = ".*DTD\\sXHTML\\ss1\\.1.*".r
-    val basicxhtml11pattern = ".*XHTML\\sBasic\\ss1\\.1.*".r
-
     doctypeInDOM.map {
       documentType =>
         val attributes = documentType.attributes
         attributes.get("name") match {
-          case "html" => attributes.get("publicId") match {
+          case "html" => attributes.get("publicId") match { // TODO: delegate to HTMLVersion
             case html5pattern() => HTMLVersion.HTML5
             case html401pattern() => HTMLVersion.HTML4_01
             case xhtml10pattern() => HTMLVersion.XHTML1_0
@@ -66,44 +66,57 @@ class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
 
   private[services] def checkForLoginForm(doc: Document): Boolean = doc.select("form").asScala.exists(elem => elem.select("[type=password]").size == 1)
 
-  private[services] def getDomainName(doc: Document): String = {
+  def getDomainName(doc: Document): String = {
     val uri = new URI(doc.location)
     val domain = uri.getHost
     if (domain.startsWith("www.")) domain.substring(4) else domain
   }
 
   private[services] def getHeadings(doc: Document): Seq[(String, Int)] = {
-    val allHeadings = doc
-      .select("h0, h1, h2, h3, h4, h5, h6")
+    val allHeadings: Seq[String] = doc
+      .select("h1, h2, h3, h4, h5, h6")
       .asScala
-      .map(_.tag().getName)
+      .map(_.tag.getName)
 
-    Seq(allHeadings.groupBy(identity).mapValues(_.size).toSeq.sortWith(_._1 < _._1): _*)
+
+    allHeadings.groupBy(identity)
+      .mapValues(_.size)
+      .toSeq
+      .sortBy {
+        case (header, _) => header
+      }
   }
 
   private[services] def getHyperlinks(doc: Document): Map[LinkType, Seq[String]] = {
     val domainName = getDomainName(doc)
 
-    doc
+    val allHyperLinks: Seq[String] = doc
       .body
       .select("a")
       .asScala
       .map(_.attributes.get("href"))
-      .groupBy(link => isInternal(link, domainName))
+
+    allHyperLinks.groupBy(isInternal(_, domainName))
   }
 
-  private def isInternal(link: String, domainName: String): Boolean = {
-    //TODO: IP adresses are not considered in this implementation. e.g. 124.512.152.124 may be an external link
-    val httpPrefix = s"^(https?:\\/\\/)".r
-    val fullPattern = s"^(https?:\\/\\/)?(www.)?($domainName)(\\/.*)?$$".r
+  private def isInternal(link: String, domainName: String): LinkType = {
+    val regexCompatibleDomainname = domainName.replace(".", "\\.") //Escape the dot in "xyz.com"
 
-    if (httpPrefix.findPrefixOf(link).isDefined) fullPattern.findFirstIn(link).isDefined else true
+    val internalLink: Regex = s"(?<rootpath>^\\/.*$$)|(^(?<protocol>https?:\\/\\/)?(?<predomain>[a-zA-Z0-9]*\\.)*(?<domain>$regexCompatibleDomainname)(?<path>\\/.*)?$$)".r
+    val externalLink: Regex = s"^(?<protocol>https?:\\/\\/)?(?<predomain>[a-zA-Z0-9]*\\.)*(?<domain>[a-zA-Z0-9]*\\.[a-zA-Z0-9]*)(?<!$regexCompatibleDomainname)(\\/.*)?$$".r
+
+    link match {
+      case internalLink(_*) => InternalLink
+      case externalLink(_*) => ExternalLink
+      case _ => NoLink
+    }
   }
 }
 
 object HtmlAnalyzer {
-  type LinkType = Boolean
+  type LinkType = String
 
-  val InternalLink = true
-  val ExternalLink = false
+  val InternalLink = "Internal"
+  val ExternalLink = "External"
+  val NoLink = "NoLink"
 }

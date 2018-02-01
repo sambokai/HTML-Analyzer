@@ -26,16 +26,27 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
 
       "analyzes an html page and return the result inside a WebPage object" in new WithHtmlAnalyzer {
         val testPage = WebPage(
-            location = "http://www.test.com/testfolder/testfile?testquery=123",
-            title = "Sign in to GitHub · GitHub",
-            domainName = "test.com",
-            headings = List(("h1", 1)),
-            hyperlinks = Map(
-              false -> ArrayBuffer("https://github.com/", "https://github.com/site/terms", "https://github.com/site/privacy", "https://github.com/security", "https://github.com/contact"),
-              true -> ArrayBuffer("#start-of-content", "/password_reset", "/join?source=login", "", "")),
-            hasLoginForm = true,
-            html_version = HTML5
-          )
+          location = "http://www.test.com/testfolder/testfile?testquery=123",
+          title = "Sign in to GitHub · GitHub",
+          domainName = "test.com",
+          headings = List(("h1", 1)),
+          hyperlinks = Map(
+            NoLink -> ArrayBuffer(
+              "#start-of-content",
+              "",
+              ""),
+            InternalLink -> ArrayBuffer(
+              "https://test.com/",
+              "/password_reset",
+              "/join?source=login",
+              "https://test.com/site/terms",
+              "https://test.com/site/privacy",
+              "https://test.com/security",
+              "https://test.com/contact")
+          ),
+          hasLoginForm = true,
+          html_version = HTML5
+        )
 
         await(analyzer.analyze(gitHubLogin.filePath)) shouldBe testPage
       }
@@ -132,23 +143,25 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
 
     "provide a getHyperlinks which" should {
       "returns all hyperlinks in the webpage, grouped by whether they link to an internal or external location" in new WithHtmlAnalyzer {
-        analyzer.getHyperlinks(testDocumentRetriever.get(gitHubLogin.filePath)) shouldBe Map(
-          ExternalLink -> ArrayBuffer(
-            "https://github.com/",
-            "https://github.com/site/terms",
-            "https://github.com/site/privacy",
-            "https://github.com/security",
-            "https://github.com/contact"
-          ),
-          InternalLink -> ArrayBuffer(
+        val hyperLinks: Map[LinkType, Seq[String]] = analyzer.getHyperlinks(testDocumentRetriever.get(gitHubLogin.filePath))
+        hyperLinks shouldBe Map(
+          NoLink -> ArrayBuffer(
             "#start-of-content",
+            "",
+            ""),
+          InternalLink -> ArrayBuffer(
+            "https://test.com/",
             "/password_reset",
             "/join?source=login",
-            "",
-            "")
+            "https://test.com/site/terms",
+            "https://test.com/site/privacy",
+            "https://test.com/security",
+            "https://test.com/contact")
         )
       }
     }
+
+    //TODO: test nonvalid links
 
   }
 

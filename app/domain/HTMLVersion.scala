@@ -1,5 +1,7 @@
 package domain
 
+import scala.util.matching.Regex
+
 case class HTMLVersion(value: String)
 
 object HTMLVersion {
@@ -16,5 +18,13 @@ object HTMLVersion {
 
   val Unknown = HTMLVersion("Unknown HTML Version")
 
-  val values = Seq(HTML5, HTML4_01, XHTML1_0, XHTMLDTD1_1, XHTMLBasic1_1, Unknown)
+  object HtmlVersionPatterns {
+    val html5pattern: Regex = "".r
+    val html401pattern: Regex = ".*4\\.01.*".r
+    val xhtml10pattern: Regex = ".*XHTML\\ss1\\.0.*".r
+    val dtdxhtml11pattern: Regex = ".*DTD\\sXHTML\\ss1\\.1.*".r
+    val basicxhtml11pattern: Regex = ".*XHTML\\sBasic\\ss1\\.1.*".r
+  }
+
 }
+
