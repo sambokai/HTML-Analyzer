@@ -26,5 +26,16 @@ object HTMLVersion {
     val basicxhtml11pattern: Regex = ".*XHTML\\sBasic\\ss1\\.1.*".r
   }
 
+  def parse(s: String): HTMLVersion = {
+    import HtmlVersionPatterns._
+    s match {
+      case html5pattern() => HTMLVersion.HTML5
+      case html401pattern() => HTMLVersion.HTML4_01
+      case xhtml10pattern() => HTMLVersion.XHTML1_0
+      case dtdxhtml11pattern() => HTMLVersion.XHTMLDTD1_1
+      case basicxhtml11pattern() => HTMLVersion.XHTMLBasic1_1
+      case _ => HTMLVersion.Unknown
+    }
+  }
 }
 

@@ -37,8 +37,6 @@ class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
   }
 
   private[services] def getHtmlVersion(doc: Document): HTMLVersion = {
-    import domain.HTMLVersion.HtmlVersionPatterns._
-
     val doctypeInDOM: Option[DocumentType] = {
       doc
         .childNodes()
@@ -51,14 +49,7 @@ class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
       documentType =>
         val attributes = documentType.attributes
         attributes.get("name") match {
-          case "html" => attributes.get("publicId") match { // TODO: delegate to HTMLVersion
-            case html5pattern() => HTMLVersion.HTML5
-            case html401pattern() => HTMLVersion.HTML4_01
-            case xhtml10pattern() => HTMLVersion.XHTML1_0
-            case dtdxhtml11pattern() => HTMLVersion.XHTMLDTD1_1
-            case basicxhtml11pattern() => HTMLVersion.XHTMLBasic1_1
-            case _ => HTMLVersion.Unknown
-          }
+          case "html" => HTMLVersion.parse(attributes.get("publicId"))
           case _ => HTMLVersion.Unknown //TODO: Make method throw InvalidFileException("Not an HTML File") if necessary
         }
     }.getOrElse(HTMLVersion.Unknown)
