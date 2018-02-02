@@ -5,9 +5,8 @@ import javax.inject.{Inject, Singleton}
 
 import com.google.inject.ImplementedBy
 import domain.{HTMLVersion, WebPage}
-import org.jsoup.Jsoup
 import org.jsoup.nodes.{Document, DocumentType}
-import play.api.Logger
+import org.jsoup.{Jsoup, UnsupportedMimeTypeException}
 import services.HtmlAnalyzer._
 
 import scala.collection.JavaConverters._
@@ -17,23 +16,26 @@ import scala.util.matching.Regex
 
 @ImplementedBy(classOf[UrlRetriever])
 trait DocumentRetriever {
-  def get(url: String): Document
+  def get(url: String): Either[String, Document]
 }
 
 @Singleton
 class UrlRetriever extends DocumentRetriever {
-  override def get(url: String): Document = Jsoup.connect(url).get
+  override def get(url: String): Either[String, Document] = try {
+    Right(Jsoup.connect(url).get)
+  } catch {
+    case e: IllegalArgumentException => Left("The URL was wrong.")
+    case e: UnsupportedMimeTypeException => Left("Unsupported Filetype. URL must link to an HTML or TXT file.")
+  }
 }
 
 @Singleton
 class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
 
-
-  def analyze(location: String): Future[WebPage] = Future {
-    val doc = documentRetriever.get(location)
-    val result = WebPage(doc.location(), doc.title(), getDomainName(doc), getHeadings(doc), getHyperlinks(doc), checkForLoginForm(doc), getHtmlVersion(doc))
-    Logger.info(s"Webpage analysis done for ${result.location} - (${result.title})")
-    result
+  def analyze(location: String): Future[Either[String, WebPage]] = Future {
+    for {
+      doc <- documentRetriever.get(location)
+    } yield WebPage(doc.location(), doc.title(), getDomainName(doc), getHeadings(doc), getHyperlinks(doc), checkForLoginForm(doc), getHtmlVersion(doc))
   }
 
   private[services] def getHtmlVersion(doc: Document): HTMLVersion = {
@@ -50,7 +52,7 @@ class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
         val attributes = documentType.attributes
         attributes.get("name") match {
           case "html" => HTMLVersion.parse(attributes.get("publicId"))
-          case _ => HTMLVersion.Unknown //TODO: Make method throw InvalidFileException("Not an HTML File") if necessary
+          case _ => HTMLVersion.Unknown
         }
     }.getOrElse(HTMLVersion.Unknown)
   }
@@ -85,7 +87,9 @@ class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
       .body
       .select("a")
       .asScala
-      .map(_.attributes.get("href"))
+      .map(link =>
+        link.attributes.get("href")
+      )
 
     allHyperLinks.groupBy(isInternal(_, domainName))
   }
@@ -110,4 +114,6 @@ object HtmlAnalyzer {
   val InternalLink = "Internal"
   val ExternalLink = "External"
   val NoLink = "NoLink"
+
+  type StatusCode = Int
 }

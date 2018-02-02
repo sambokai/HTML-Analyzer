@@ -1,6 +1,6 @@
 @import domain.WebPage
 @import services.HtmlAnalyzer
-@(analysisData: Option[WebPage], userForm: Form[WebsiteForm.Data], postUrl: Call)(implicit request: RequestHeader, messages: Messages)
+@(analysisData: Option[WebPage], userForm: Form[WebsiteForm.Data], postUrl: Call, errorMessage: Option[String])(implicit request: RequestHeader, messages: Messages)
 
 @main("HTML-Analyzer") {
 
@@ -15,6 +15,19 @@
       @navbarForm(userForm, postUrl)
     </div>
   </nav>
+
+  @{
+    errorMessage match {
+      case Some(message) => {
+          <div class="alert alert-warning">
+          <strong>Please Try Again!</strong>
+          {message}
+          </div>
+      }
+
+      case None => None
+    }
+  }
 
   @analysisData.map { result =>
 
@@ -32,7 +45,7 @@
 
         @result.hyperlinks.map { hyperlink =>
           @{
-            if(hyperlink._1 == HtmlAnalyzer.InternalLink) <th scope="col">Int. Links</th> else if (hyperlink._1 == HtmlAnalyzer.ExternalLink) <th scope="col">Ext. Links</th>
+            if(hyperlink._1 == HtmlAnalyzer.InternalLink) <th scope="col">Int. Links</th> else if(hyperlink._1 == HtmlAnalyzer.ExternalLink) <th scope="col">Ext. Links</th>
           }
         }
 

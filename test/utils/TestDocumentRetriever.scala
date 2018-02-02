@@ -10,7 +10,7 @@ class TestDocumentRetriever extends DocumentRetriever {
 
   import TestDocumentRetriever._
 
-  override def get(location: String): Document = {
+  override def get(location: String): Either[String, Document] = Right {
     val path = getClass.getResource(location).toURI
     val testFile = new File(path)
     Jsoup.parse(testFile, null, testBaseUri)
