@@ -67,8 +67,8 @@
           if(result.hasLoginForm) "Yes" else "No"
         }</td>
 
-        @result.hyperlinks.map { hyperlink =>
-          <td>@hyperlink._2.size</td>
+        @{
+          result.hyperlinks.map { case (linktype, links) => if(linktype != HtmlAnalyzer.NoLink) <td>{links.size}</td> }
         }
 
         @result.headings.map { heading =>
