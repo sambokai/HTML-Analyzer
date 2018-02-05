@@ -2,6 +2,7 @@ package services
 
 import java.net.URI
 import javax.inject.{Inject, Singleton}
+import javax.net.ssl.SSLHandshakeException
 
 import com.google.inject.ImplementedBy
 import domain.{HTMLVersion, WebPage}
@@ -26,6 +27,7 @@ class UrlRetriever extends DocumentRetriever {
   } catch {
     case e: IllegalArgumentException => Left("The URL was wrong.")
     case e: UnsupportedMimeTypeException => Left("Unsupported Filetype. URL must link to an HTML or TXT file.")
+    case e: SSLHandshakeException => Left("SSL Encryption Error. Is the domain using HTTPS?")
   }
 }
 
