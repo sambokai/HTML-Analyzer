@@ -3,14 +3,10 @@
 <div class="@if(elements.hasErrors) {error} form-group">
   @elements.input
 
-  <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Analyze</button>
-  @* Error messages like "Only Strings allowed. Try again. "*@
-  @*
-  <span class="errors">@elements.errors.mkString(", ")</span>
-  *@
+<datalist id="suggestions">
+  <option value="https://www.spiegel.de/meinspiegel/login.html"></option>
+  <option value="https://github.com/login"></option>
+</datalist>
 
-  @* Help messages like "Required Field" *@
-  @*
-  <span class="help">@elements.infos.mkString(", ")</span>
-  *@
+<button class="btn btn-outline-success my-2 my-sm-0" type="submit">Analyze</button>
 </div>
