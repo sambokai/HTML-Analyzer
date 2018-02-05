@@ -6,5 +6,5 @@
 
 @helper.form(postUrl, 'class -> "form-inline my-2 my-lg-0") {
   @helper.CSRF.formField
-  @helper.inputText(form("url"), 'class -> "form-control mr-sm-2", 'type -> "text", 'placeholder -> "eg. github.com/login", 'required -> true, 'list -> "suggestions")
+  @helper.inputText(form("url"), 'class -> "form-control mr-sm-2", 'type -> "text", 'placeholder -> "Enter URL", 'required -> true, 'list -> "suggestions")
 }
