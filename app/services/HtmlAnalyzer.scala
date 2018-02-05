@@ -1,6 +1,6 @@
 package services
 
-import java.net.URI
+import java.net.{MalformedURLException, URI}
 import javax.inject.{Inject, Singleton}
 import javax.net.ssl.SSLHandshakeException
 
@@ -28,6 +28,7 @@ class UrlRetriever extends DocumentRetriever {
     case e: IllegalArgumentException => Left("The URL was wrong.")
     case e: UnsupportedMimeTypeException => Left("Unsupported Filetype. URL must link to an HTML or TXT file.")
     case e: SSLHandshakeException => Left("SSL Encryption Error. Is the domain using HTTPS?")
+    case e: MalformedURLException => Left("Only HTTP and HTTPS websites are supported.")
   }
 }
 
