@@ -99,13 +99,20 @@
 
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                     <a href={availability.link}>{availability.link}</a>
-                    {availability.statusCode match {
-                      case Redirection(statusCode) => <span class="badge badge-secondary badge-pill">{statusCode}</span>
-                      case Informational(statusCode) => <span class="badge badge-info badge-pill">{statusCode}</span>
-                      case Success(statusCode) => <span class="badge badge-success badge-pill">{statusCode}</span>
-                      case ClientError(statusCode) => <span class="badge badge-danger badge-pill">{statusCode}</span>
-                      case ServerError(statusCode) => <span class="badge badge-danger badge-pill">{statusCode}</span>
-                    }}
+                    {
+                      val statusCode = availability.statusCode
+                      val tooltipMessage: String = statusCode match {
+                        case OK => s"${statusCode.reason}"
+                        case _ => s"${statusCode.reason}: ${statusCode.defaultMessage}"
+                      }
+                      statusCode match {
+                        case Redirection(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-warning badge-pill">{statusInt}</a>
+                        case Informational(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-info badge-pill">{statusInt}</a>
+                        case Success(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-success badge-pill">{statusInt}</a>
+                        case ClientError(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-danger badge-pill">{statusInt}</a>
+                        case ServerError(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-danger badge-pill">{statusInt}</a>
+                      }
+                    }
                     </li>
 
                   }
