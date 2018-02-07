@@ -1,5 +1,6 @@
 @import domain.WebPage
 @import services.LinkCheckerImpl
+@import akka.http.scaladsl.model.StatusCodes._
 @(analysisData: Option[WebPage], userForm: Form[WebsiteForm.Data], postUrl: Call, errorMessage: Option[String])(implicit request: RequestHeader, messages: Messages)
 
 @main("HTML-Analyzer") {
@@ -98,7 +99,13 @@
 
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                     <a href={availability.link}>{availability.link}</a>
-                    <span class="badge badge-primary badge-pill">{availability.statusCode.intValue}</span>
+                    {availability.statusCode match {
+                      case Redirection(statusCode) => <span class="badge badge-secondary badge-pill">{statusCode}</span>
+                      case Informational(statusCode) => <span class="badge badge-info badge-pill">{statusCode}</span>
+                      case Success(statusCode) => <span class="badge badge-success badge-pill">{statusCode}</span>
+                      case ClientError(statusCode) => <span class="badge badge-danger badge-pill">{statusCode}</span>
+                      case ServerError(statusCode) => <span class="badge badge-danger badge-pill">{statusCode}</span>
+                    }}
                     </li>
 
                   }
