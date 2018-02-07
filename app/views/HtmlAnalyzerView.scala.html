@@ -1,5 +1,5 @@
 @import domain.WebPage
-@import services.HtmlAnalyzer
+@import services.LinkCheckerImpl
 @(analysisData: Option[WebPage], userForm: Form[WebsiteForm.Data], postUrl: Call, errorMessage: Option[String])(implicit request: RequestHeader, messages: Messages)
 
 @main("HTML-Analyzer") {
@@ -45,7 +45,7 @@
 
         @result.hyperlinks.map { hyperlink =>
           @{
-            if(hyperlink._1 == HtmlAnalyzer.InternalLink) <th scope="col">Int. Links</th> else if(hyperlink._1 == HtmlAnalyzer.ExternalLink) <th scope="col">Ext. Links</th>
+            if(hyperlink._1 == LinkCheckerImpl.InternalLink) <th scope="col">Int. Links</th> else if(hyperlink._1 == LinkCheckerImpl.ExternalLink) <th scope="col">Ext. Links</th>
           }
         }
 
@@ -68,7 +68,7 @@
         }</td>
 
         @{
-          result.hyperlinks.map { case (linktype, links) => if(linktype != HtmlAnalyzer.NoLink) <td>{links.size}</td> }
+          result.hyperlinks.map { case (linktype, links) => if(linktype != LinkCheckerImpl.NoLink) <td>{links.size}</td> }
         }
 
         @result.headings.map { heading =>

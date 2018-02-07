@@ -8,12 +8,11 @@ import com.google.inject.ImplementedBy
 import domain.{HTMLVersion, WebPage}
 import org.jsoup.nodes.{Document, DocumentType}
 import org.jsoup.{Jsoup, UnsupportedMimeTypeException}
-import services.HtmlAnalyzer._
+import services.LinkCheckerImpl.AvailabilitiesByLinkTarget
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.matching.Regex
 
 @ImplementedBy(classOf[UrlRetriever])
 trait DocumentRetriever {
@@ -33,13 +32,15 @@ class UrlRetriever extends DocumentRetriever {
 }
 
 @Singleton
-class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
+class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever, linkChecker: LinkChecker) {
 
-  def analyze(location: String): Future[Either[String, WebPage]] = Future {
-    for {
-      doc <- documentRetriever.get(location)
-    } yield WebPage(doc.location(), doc.title(), getDomainName(doc), getHeadings(doc), getHyperlinks(doc), checkForLoginForm(doc), getHtmlVersion(doc))
-  }
+  def analyze(location: String): Future[Either[String, WebPage]] =
+    documentRetriever.get(location) match {
+      case Left(e) => Future.successful(Left(e))
+      case Right(doc) => getHyperlinks(doc).map { avail =>
+        Right(WebPage(doc.location(), doc.title(), getDomainName(doc), getHeadings(doc), avail, checkForLoginForm(doc), getHtmlVersion(doc)))
+      }
+    }
 
   private[services] def getHtmlVersion(doc: Document): HTMLVersion = {
     val doctypeInDOM: Option[DocumentType] = {
@@ -83,9 +84,7 @@ class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
       }
   }
 
-  private[services] def getHyperlinks(doc: Document): Map[LinkType, Seq[String]] = {
-    val domainName = getDomainName(doc)
-
+  private[services] def getHyperlinks(doc: Document): Future[AvailabilitiesByLinkTarget] = {
     val allHyperLinks: Seq[String] = doc
       .body
       .select("a")
@@ -94,29 +93,8 @@ class HtmlAnalyzer @Inject()(documentRetriever: DocumentRetriever) {
         link.attributes.get("href")
       )
 
-    allHyperLinks.groupBy(isInternal(_, domainName))
+    linkChecker.getAvailabilityForLinks(allHyperLinks, getDomainName(doc))
   }
 
-  private def isInternal(link: String, domainName: String): LinkType = {
-    val regexCompatibleDomainname = domainName.replace(".", "\\.") //Escape the dot in "xyz.com"
 
-    val internalLink: Regex = s"(?<rootpath>^\\/.*$$)|(^(?<protocol>https?:\\/\\/)?(?<predomain>[a-zA-Z0-9]*\\.)*(?<domain>$regexCompatibleDomainname)(?<path>\\/.*)?$$)".r
-    val externalLink: Regex = s"^(?<protocol>https?:\\/\\/)?(?<predomain>[a-zA-Z0-9]*\\.)*(?<domain>[a-zA-Z0-9]*\\.[a-zA-Z0-9]*)(?<!$regexCompatibleDomainname)(\\/.*)?$$".r
-
-    link match {
-      case internalLink(_*) => InternalLink
-      case externalLink(_*) => ExternalLink
-      case _ => NoLink
-    }
-  }
-}
-
-object HtmlAnalyzer {
-  type LinkType = String
-
-  val InternalLink = "Internal"
-  val ExternalLink = "External"
-  val NoLink = "NoLink"
-
-  type StatusCode = Int
 }

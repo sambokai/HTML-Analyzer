@@ -2,6 +2,7 @@ package services
 
 import java.io.File
 
+import akka.http.scaladsl.model.StatusCode
 import domain.HTMLVersion._
 import domain.{HTMLVersion, WebPage}
 import org.jsoup.Jsoup
@@ -9,10 +10,33 @@ import org.jsoup.nodes.Document
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
-import services.HtmlAnalyzer._
+import services.LinkCheckerImpl.{AvailabilitiesByLinkTarget, ExternalLink, InternalLink}
+import services.TestLinkChecker.testAvailabilities
 import utils.TestDocumentRetriever._
 
-import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+class TestLinkChecker extends LinkChecker {
+
+  import LinkCheckerImpl._
+  import TestLinkChecker._
+
+  override def getAvailabilityForLinks(links: Seq[String], domain: String): Future[AvailabilitiesByLinkTarget] = Future(testAvailabilities)
+}
+
+object TestLinkChecker {
+  val testAvailability = Availability("https://www.test.com/123", StatusCode.int2StatusCode(200))
+
+  val testAvailabilities: AvailabilitiesByLinkTarget = Map(
+    InternalLink -> Seq(
+      testAvailability, testAvailability, testAvailability
+    ),
+    ExternalLink -> Seq(
+      testAvailability, testAvailability, testAvailability
+    )
+  )
+}
 
 class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeout {
 
@@ -20,8 +44,7 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
   import utils.TestDocumentRetriever
 
   trait WithHtmlAnalyzer {
-    val testDocumentRetriever = new TestDocumentRetriever
-    val analyzer = new HtmlAnalyzer(testDocumentRetriever)
+    val analyzer = new HtmlAnalyzer(new TestDocumentRetriever, new TestLinkChecker)
 
     def testDocument(location: String): Document = {
       val path = getClass.getResource(location).toURI
@@ -39,7 +62,7 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
           override def get(url: String): Either[String, Document] = Left(errorMessage)
         }
 
-        await(new HtmlAnalyzer(documentRetrieverWithErrors).analyze("valid url")) shouldBe Left(errorMessage)
+        await(new HtmlAnalyzer(documentRetrieverWithErrors, new TestLinkChecker).analyze("valid url")) shouldBe Left(errorMessage)
       }
 
       "analyzes an html page and return the result inside a WebPage object" in new WithHtmlAnalyzer {
@@ -50,20 +73,7 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
               title = "Sign in to GitHub · GitHub",
               domainName = "test.com",
               headings = List(("h1", 1)),
-              hyperlinks = Map(
-                NoLink -> ArrayBuffer(
-                  "#start-of-content",
-                  "",
-                  ""),
-                InternalLink -> ArrayBuffer(
-                  "https://test.com/",
-                  "/password_reset",
-                  "/join?source=login",
-                  "https://test.com/site/terms",
-                  "https://test.com/site/privacy",
-                  "https://test.com/security",
-                  "https://test.com/contact")
-              ),
+              hyperlinks = testAvailabilities,
               hasLoginForm = true,
               html_version = HTML5
             )
@@ -79,7 +89,7 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
               "",
               "test.com",
               List(),
-              Map(),
+              testAvailabilities,
               hasLoginForm = false,
               HTMLVersion.HTML5
             )
@@ -96,7 +106,7 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
               "",
               "test.com",
               List(),
-              Map(),
+              testAvailabilities,
               hasLoginForm = false,
               HTMLVersion.Unknown
             ))
@@ -111,7 +121,7 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
               "",
               "test.com",
               List(),
-              Map(),
+              testAvailabilities,
               hasLoginForm = false,
               HTMLVersion.Unknown
             ))
@@ -170,21 +180,8 @@ class HtmlAnalyzerSpec extends WordSpec with FutureAwaits with DefaultAwaitTimeo
 
     "provide a getHyperlinks which" should {
       "returns all hyperlinks in the webpage, grouped by whether they link to an internal or external location" in new WithHtmlAnalyzer {
-        val hyperLinks: Map[LinkType, Seq[String]] = analyzer.getHyperlinks(testDocument(gitHubLogin.filePath))
-        hyperLinks shouldBe Map(
-          NoLink -> ArrayBuffer(
-            "#start-of-content",
-            "",
-            ""),
-          InternalLink -> ArrayBuffer(
-            "https://test.com/",
-            "/password_reset",
-            "/join?source=login",
-            "https://test.com/site/terms",
-            "https://test.com/site/privacy",
-            "https://test.com/security",
-            "https://test.com/contact")
-        )
+        val hyperLinks: Future[AvailabilitiesByLinkTarget] = analyzer.getHyperlinks(testDocument(gitHubLogin.filePath))
+        await(hyperLinks) shouldBe testAvailabilities
       }
     }
 

@@ -1,6 +1,6 @@
 package domain
 
-import services.HtmlAnalyzer
+import services.LinkCheckerImpl.AvailabilitiesByLinkTarget
 
 case class WebPage(
                     location: String,
@@ -11,7 +11,7 @@ case class WebPage(
 
                     headings: Seq[(String, Int)],
 
-                    hyperlinks: Map[HtmlAnalyzer.LinkType, Seq[String]],
+                    hyperlinks: AvailabilitiesByLinkTarget,
 
                     hasLoginForm: Boolean,
 
