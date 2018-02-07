@@ -68,7 +68,6 @@ class LinkCheckerImplTest extends WordSpec with MockitoSugar with FutureAwaits w
         await(result) shouldBe Map(InternalLink -> absoluteTestLinks.map(testAvailability))
       }
 
-
       "check the http response-codes of a sequence containing invalid links and return them sorted by whether the links are internal or external " in new WithLinkCheckClient {
 
         val invalidTestLinks = Seq(
@@ -81,7 +80,29 @@ class LinkCheckerImplTest extends WordSpec with MockitoSugar with FutureAwaits w
 
         await(result) shouldBe Map.empty
       }
+
+      "check links that occur multiple times only once" in new WithLinkCheckClient {
+        val duplicateInternalLinks = Seq(
+          "https://www.test.com",
+          "https://www.test.com",
+          "https://www.test.com",
+          "https://www.test.com"
+        )
+
+        val duplicateExternalLinks = Seq(
+          "https://en.wikipedia.org/wiki/Madonna",
+          "https://en.wikipedia.org/wiki/Madonna",
+          "https://en.wikipedia.org/wiki/Madonna",
+          "https://en.wikipedia.org/wiki/Madonna",
+          "https://en.wikipedia.org/wiki/Madonna"
+        )
+
+        val result: Future[AvailabilitiesByLinkTarget] = linkChecker.getAvailabilityForLinks(duplicateInternalLinks ++ duplicateExternalLinks, "test.com")
+
+        await(result) shouldBe Map(InternalLink -> Seq(testAvailability("https://www.test.com")), ExternalLink -> Seq(testAvailability("https://en.wikipedia.org/wiki/Madonna")))
+      }
     }
+
 
     "provide a resolve method" should {
       "get the http response-code of a link and return it as an Availability" in new WithLinkCheckClient {

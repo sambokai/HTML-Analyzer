@@ -25,7 +25,7 @@ class LinkCheckerImpl @Inject()(linkCheckClient: LinkCheckClient) extends LinkCh
 
   override def getAvailabilityForLinks(links: Seq[String], domain: String): Future[AvailabilitiesByLinkTarget] = {
 
-    val sortedLinks: Map[LinkTargetDomain, Seq[String]] = links.groupBy(link => getLinkTargetDomain(link, domain)).filterKeys(_ != NoLink)
+    val sortedLinks: Map[LinkTargetDomain, Seq[String]] = links.distinct.groupBy(link => getLinkTargetDomain(link, domain)).filterKeys(_ != NoLink)
 
     val result: Map[LinkTargetDomain, Future[Seq[Availability]]] = sortedLinks.map {
       case (linkTargetDomain, urls) => (linkTargetDomain, Future.sequence(urls.map {
