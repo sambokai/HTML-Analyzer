@@ -20,8 +20,7 @@
     errorMessage match {
       case Some(message) => {
           <div class="alert alert-warning">
-          <strong>Please Try Again!</strong>
-          {message}
+          <strong>Please Try Again!</strong>{message}
           </div>
       }
 
@@ -43,10 +42,17 @@
 
         <th scope="col">Login Form</th>
 
-        @result.hyperlinks.map { hyperlink =>
-          @{
-            if(hyperlink._1 == LinkCheckerImpl.InternalLink) <th scope="col">Int. Links</th> else if(hyperlink._1 == LinkCheckerImpl.ExternalLink) <th scope="col">Ext. Links</th>
+        @{
+          if(result.hyperlinks) <th scope="col">Total Links</th>
+        }
+
+        @{
+          result.hyperlinks.map {
+            case (targetDomain, _) if targetDomain == LinkCheckerImpl.InternalLink => <th scope="col">Int. Links</th>
+            case (targetDomain, _) if targetDomain == LinkCheckerImpl.ExternalLink => <th scope="col">Ext. Links</th>
           }
+
+
         }
 
         @result.headings.map { heading =>
@@ -68,7 +74,48 @@
         }</td>
 
         @{
-          result.hyperlinks.map { case (linktype, links) => if(linktype != LinkCheckerImpl.NoLink) <td>{links.size}</td> }
+          if(result.hyperlinks)
+            <td>
+            <a href="#" data-toggle="modal" data-target="#totalLinksModal">
+            {result.hyperlinks.values.flatten.size}
+            </a>
+            </td>
+        }
+        @* Total-Links Modal *@
+        <div class="modal fade" id="totalLinksModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+          <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <ul class="list-group">
+                @{
+                  result.hyperlinks.values.flatten.map { availability =>
+
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href={availability.link}>{availability.link}</a>
+                    <span class="badge badge-primary badge-pill">{availability.statusCode.intValue}</span>
+                    </li>
+
+                  }
+
+                }
+                </ul>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        @{
+          result.hyperlinks.map { case (linktype, links) => <td>{links.size}</td> }
         }
 
         @result.headings.map { heading =>
