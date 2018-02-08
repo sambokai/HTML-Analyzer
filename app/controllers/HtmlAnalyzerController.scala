@@ -7,9 +7,12 @@ import play.api.mvc._
 import services.HtmlAnalyzer
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.matching.Regex
 
 @Singleton
 class HtmlAnalyzerController @Inject()(htmlAnalyzer: HtmlAnalyzer, messagesAction: MessagesActionBuilder, components: ControllerComponents) extends AbstractController(components) with play.api.i18n.I18nSupport {
+
+  import HtmlAnalyzerController._
 
   private val postUrl = routes.HtmlAnalyzerController.triggerAnalysis()
 
@@ -20,12 +23,22 @@ class HtmlAnalyzerController @Inject()(htmlAnalyzer: HtmlAnalyzer, messagesActio
 
   def triggerAnalysis: Action[AnyContent] = Action.async { implicit request =>
     val formData = WebsiteForm.urlAnalysisForm.bindFromRequest
+    val rawUserInput = formData.data("url")
 
-    htmlAnalyzer.analyze(formData.data("url")).map {
+    val userInputWithProtocol = rawUserInput match {
+      case httpProtocol() => rawUserInput
+      case _ => s"http://$rawUserInput"
+    }
+
+    htmlAnalyzer.analyze(userInputWithProtocol).map {
       case Right(webpage: WebPage) => Ok(views.html.HtmlAnalyzerView(Some(webpage), WebsiteForm.urlAnalysisForm, postUrl, None))
       case Left(errorMessage: String) => BadRequest(views.html.HtmlAnalyzerView(None, WebsiteForm.urlAnalysisForm, postUrl, Some(errorMessage)))
     }.recover {
       case e => BadRequest(views.html.HtmlAnalyzerView(None, WebsiteForm.urlAnalysisForm, postUrl, Some("Something went wrong. Please try again or contact us. " + e)))
     }
   }
+}
+
+object HtmlAnalyzerController {
+  val httpProtocol: Regex = "^https?:\\/\\/.*".r
 }
