@@ -26,7 +26,7 @@ class TestLinkChecker extends LinkChecker {
 }
 
 object TestLinkChecker {
-  val testAvailability = Availability("https://www.test.com/123", StatusCode.int2StatusCode(200))
+  val testAvailability = LinkAvailability("https://www.test.com/123", StatusCode.int2StatusCode(200))
 
   val testAvailabilities: AvailabilitiesByLinkTarget = Map(
     InternalLink -> Seq(

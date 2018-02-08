@@ -3,15 +3,29 @@ package services
 import javax.inject.{Inject, Singleton}
 
 import akka.http.scaladsl.model.StatusCode
-import client.LinkCheckClient
 import com.google.inject.ImplementedBy
+import play.api.libs.ws.WSClient
 import services.LinkCheckerImpl.AvailabilitiesByLinkTarget
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.matching.Regex
 
-case class Availability(link: String, statusCode: StatusCode)
+case class LinkAvailability(link: String, statusCode: StatusCode)
+
+
+@ImplementedBy(classOf[LinkCheckClientImpl])
+trait LinkCheckClient {
+  def forUrl(url: String): Future[LinkAvailability]
+}
+
+@Singleton
+class LinkCheckClientImpl @Inject()(ws: WSClient) extends LinkCheckClient {
+  def forUrl(url: String): Future[LinkAvailability] = ws.url(url).withFollowRedirects(true).get().map { response =>
+    LinkAvailability(url, StatusCode.int2StatusCode(response.status))
+  }
+}
+
 
 @ImplementedBy(classOf[LinkCheckerImpl])
 trait LinkChecker {
@@ -24,22 +38,28 @@ class LinkCheckerImpl @Inject()(linkCheckClient: LinkCheckClient) extends LinkCh
   import LinkCheckerImpl._
 
   override def getAvailabilityForLinks(links: Seq[String], domain: String): Future[AvailabilitiesByLinkTarget] = {
-
-    val sortedLinks: Map[LinkTargetDomain, Seq[String]] = links.distinct.groupBy(link => getLinkTargetDomain(link, domain)).filterKeys(_ != NoLink)
-
-    val result: Map[LinkTargetDomain, Future[Seq[Availability]]] = sortedLinks.map {
-      case (linkTargetDomain, urls) => (linkTargetDomain, Future.sequence(urls.map {
-        case link if link.startsWith("/") => resolve(s"http://$domain$link")
-        case link => resolve(link)
-      }))
+    val linkAvailabilitiesWithLinkTarget: Seq[Future[(LinkTargetDomain, LinkAvailability)]] = links.distinct.map {
+      case link if link.startsWith("/") => resolve(s"http://$domain$link", domain)
+      case link => resolve(link, domain)
     }
 
-    Future.traverse(result) {
-      case (k, fv) => fv.map(k -> _)
-    }.map(_.toMap)
+    val eventuallinkAvailabilitiesWithLinkTarget: Future[Seq[(LinkTargetDomain, LinkAvailability)]] = Future.sequence(linkAvailabilitiesWithLinkTarget)
+
+    eventuallinkAvailabilitiesWithLinkTarget.map { availabilitiesWithLinkType: Seq[(LinkTargetDomain, LinkAvailability)] =>
+      availabilitiesWithLinkType
+        .filterNot {
+          case (linkTarget, _) => linkTarget == NoLink
+        }
+        .groupBy {
+          case (linkTarget, _) => linkTarget
+        }
+        .map {
+          case (linkTarget, availabilities) => (linkTarget, availabilities.map(_._2))
+        }
+    }
   }
 
-  def resolve(link: String): Future[Availability] = linkCheckClient.forUrl(link)
+  def resolve(link: String, domain: String): Future[(LinkTargetDomain, LinkAvailability)] = linkCheckClient.forUrl(link).map((getLinkTargetDomain(link, domain), _))
 
   def getLinkTargetDomain(link: String, domainName: String): LinkTargetDomain = {
     val regexCompatibleDomainname = domainName.replace(".", "\\.") //Escape the dot in "xyz.com"
@@ -64,7 +84,7 @@ object LinkCheckerImpl {
 
   type StatusCode = Int
 
-  type AvailabilitiesByLinkTarget = Map[LinkTargetDomain, Seq[Availability]]
+  type AvailabilitiesByLinkTarget = Map[LinkTargetDomain, Seq[LinkAvailability]]
 }
 
 

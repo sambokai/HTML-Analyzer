@@ -1,7 +1,6 @@
 package services
 
 import akka.http.scaladsl.model.{StatusCode, StatusCodes}
-import client.LinkCheckClient
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar
@@ -14,12 +13,12 @@ class TestLinkCheckClient extends LinkCheckClient {
 
   import TestLinkCheckClient._
 
-  override def forUrl(url: String): Future[Availability] = Future.successful(testAvailability(url))
+  override def forUrl(url: String): Future[LinkAvailability] = Future.successful(testAvailability(url))
 
 }
 
 object TestLinkCheckClient {
-  def testAvailability(url: String): Availability = Availability(url, StatusCode.int2StatusCode(200))
+  def testAvailability(url: String): LinkAvailability = LinkAvailability(url, StatusCode.int2StatusCode(200))
 }
 
 trait WithLinkCheckClient {
@@ -107,7 +106,8 @@ class LinkCheckerImplTest extends WordSpec with MockitoSugar with FutureAwaits w
     "provide a resolve method" should {
       "get the http response-code of a link and return it as an Availability" in new WithLinkCheckClient {
         val testUrl = "https://test.com/123"
-        await(linkChecker.resolve(testUrl)) shouldBe Availability(testUrl, StatusCodes.OK)
+        val testdomain = "test.com"
+        await(linkChecker.resolve(testUrl, testdomain)) shouldBe(InternalLink, LinkAvailability(testUrl, StatusCodes.OK))
       }
     }
 
