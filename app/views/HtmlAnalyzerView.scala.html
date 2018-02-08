@@ -18,14 +18,10 @@
   </nav>
 
   @{
-    errorMessage match {
-      case Some(message) => {
-          <div class="alert alert-warning">
-          <strong>Please Try Again!</strong>{message}
-          </div>
-      }
-
-      case None => None
+    errorMessage.map { message =>
+        <div class="alert alert-warning">
+        <strong>Please Try Again!</strong> {message}
+        </div>
     }
   }
 
@@ -138,6 +134,6 @@
       </tr>
     </tbody>
   </table>
-  }.getOrElse(None)
+  }
 
 }
