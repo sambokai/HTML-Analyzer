@@ -107,7 +107,7 @@ class LinkCheckerImplTest extends WordSpec with MockitoSugar with FutureAwaits w
       "get the http response-code of a link and return it as an Availability" in new WithLinkCheckClient {
         val testUrl = "https://test.com/123"
         val testdomain = "test.com"
-        await(linkChecker.resolve(testUrl, testdomain)) shouldBe(InternalLink, LinkAvailability(testUrl, StatusCodes.OK))
+        await(linkChecker.resolve(testUrl, testdomain)) shouldBe LinkAvailability(testUrl, StatusCodes.OK)
       }
     }
 

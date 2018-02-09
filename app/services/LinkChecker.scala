@@ -38,18 +38,16 @@ class LinkCheckerImpl @Inject()(linkCheckClient: LinkCheckClient) extends LinkCh
   import LinkCheckerImpl._
 
   override def getAvailabilityForLinks(links: Seq[String], domain: String): Future[AvailabilitiesByLinkTarget] = {
-    val linkAvailabilitiesWithLinkTarget: Seq[Future[(LinkTargetDomain, LinkAvailability)]] = links.distinct.map {
-      case link if link.startsWith("/") => resolve(s"http://$domain$link", domain)
-      case link => resolve(link, domain)
-    }
+    val linkAvailabilitiesWithLinkTarget: Seq[Future[(LinkTargetDomain, LinkAvailability)]] = links.distinct
+      .filter(getLinkTargetDomain(_, domain) != NoLink)
+      .map { link =>
+        resolve(link, domain).map((getLinkTargetDomain(link, domain), _))
+      }
 
     val eventuallinkAvailabilitiesWithLinkTarget: Future[Seq[(LinkTargetDomain, LinkAvailability)]] = Future.sequence(linkAvailabilitiesWithLinkTarget)
 
     eventuallinkAvailabilitiesWithLinkTarget.map { availabilitiesWithLinkType: Seq[(LinkTargetDomain, LinkAvailability)] =>
       availabilitiesWithLinkType
-        .filterNot {
-          case (linkTarget, _) => linkTarget == NoLink
-        }
         .groupBy {
           case (linkTarget, _) => linkTarget
         }
@@ -59,7 +57,10 @@ class LinkCheckerImpl @Inject()(linkCheckClient: LinkCheckClient) extends LinkCh
     }
   }
 
-  def resolve(link: String, domain: String): Future[(LinkTargetDomain, LinkAvailability)] = linkCheckClient.forUrl(link).map((getLinkTargetDomain(link, domain), _))
+  def resolve(link: String, domain: String): Future[LinkAvailability] = link match {
+    case relativeLink if link.startsWith("/") => linkCheckClient.forUrl(s"http://$domain$relativeLink")
+    case absoluteLink => linkCheckClient.forUrl(link)
+  }
 
   def getLinkTargetDomain(link: String, domainName: String): LinkTargetDomain = {
     val regexCompatibleDomainname = domainName.replace(".", "\\.") //Escape the dot in "xyz.com"
