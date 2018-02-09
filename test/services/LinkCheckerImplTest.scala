@@ -1,6 +1,6 @@
 package services
 
-import akka.http.scaladsl.model.{StatusCode, StatusCodes}
+import akka.http.scaladsl.model.StatusCode
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar
@@ -18,7 +18,7 @@ class TestLinkCheckClient extends LinkCheckClient {
 }
 
 object TestLinkCheckClient {
-  def testAvailability(url: String): LinkAvailability = LinkAvailability(url, StatusCode.int2StatusCode(200))
+  def testAvailability(url: String): LinkAvailability = LinkAvailability(url, Right(StatusCode.int2StatusCode(200)))
 }
 
 trait WithLinkCheckClient {
@@ -107,7 +107,7 @@ class LinkCheckerImplTest extends WordSpec with MockitoSugar with FutureAwaits w
       "get the http response-code of a link and return it as an Availability" in new WithLinkCheckClient {
         val testUrl = "https://test.com/123"
         val testdomain = "test.com"
-        await(linkChecker.resolve(testUrl, testdomain)) shouldBe LinkAvailability(testUrl, StatusCodes.OK)
+        await(linkChecker.resolve(testUrl, testdomain)) shouldBe testAvailability(testUrl)
       }
     }
 

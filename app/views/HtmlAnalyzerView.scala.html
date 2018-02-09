@@ -19,121 +19,127 @@
 
   @{
     errorMessage.map { message =>
-        <div class="alert alert-warning">
-        <strong>Please Try Again!</strong> {message}
-        </div>
+      <div class="alert alert-warning">
+      <strong>Please Try Again!</strong>{message}
+      </div>
     }
   }
 
   @analysisData.map { result =>
 
-  <table class="table table-hover table-bordered">
-    <thead>
-      <tr>
-        <th scope="col">
-              Domain
-          <small class="text-muted">Hover for Full URL</small>
-        </th>
-        <th scope="col">Title</th>
-        <th scope="col">HTML Version</th>
+    <table class="table table-hover table-bordered">
+      <thead>
+        <tr>
+          <th scope="col">
+            Domain
+            <small class="text-muted">Hover for Full URL</small>
+          </th>
+          <th scope="col">Title</th>
+          <th scope="col">HTML Version</th>
 
-        <th scope="col">Login Form</th>
+          <th scope="col">Login Form</th>
 
-        @{
-          if(result.hyperlinks) <th scope="col">Total Links</th>
-        }
-
-        @{
-          result.hyperlinks.map {
-            case (targetDomain, _) if targetDomain == LinkCheckerImpl.InternalLink => <th scope="col">Int. Links</th>
-            case (targetDomain, _) if targetDomain == LinkCheckerImpl.ExternalLink => <th scope="col">Ext. Links</th>
+          @{
+            if(result.hyperlinks) <th scope="col">Total Links</th>
           }
 
+          @{
+            result.hyperlinks.map {
+              case (targetDomain, _) if targetDomain == LinkCheckerImpl.InternalLink => <th scope="col">Int. Links</th>
+              case (targetDomain, _) if targetDomain == LinkCheckerImpl.ExternalLink => <th scope="col">Ext. Links</th>
+            }
 
-        }
 
-        @result.headings.map { heading =>
-          <th scope="col">@heading._1</th>
-        }
-        </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>
-          <a data-toggle="tooltip" href="@result.location" title="@result.location">
-          @result.domainName
-          </a>
-        </td>
-        <td>@result.title</td>
-        <td>@result.html_version.value</td>
-        <td>@{
-          if(result.hasLoginForm) "Yes" else "No"
-        }</td>
+          }
 
-        @{
-          if(result.hyperlinks)
-            <td>
-            <a href="#" data-toggle="modal" data-target="#totalLinksModal">
-            {result.hyperlinks.values.flatten.size}
+          @result.headings.map { heading =>
+            <th scope="col">@heading._1</th>
+          }
+          </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <a data-toggle="tooltip" href="@result.location" title="@result.location">
+            @result.domainName
             </a>
-            </td>
-        }
-        @* Total-Links Modal *@
-        <div class="modal fade" id="totalLinksModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
-          <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLongTitle">All Links & their Availabilities for @{result.location}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <ul class="list-group">
-                @{
-                  result.hyperlinks.values.flatten.map { availability =>
+          </td>
+          <td>@result.title</td>
+          <td>@result.html_version.value</td>
+          <td>@{
+            if(result.hasLoginForm) "Yes" else "No"
+          }</td>
 
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <a href={availability.link}>{availability.link}</a>
-                    {
-                      val statusCode = availability.statusCode
-                      val tooltipMessage: String = statusCode match {
-                        case OK => s"${statusCode.reason}"
-                        case _ => s"${statusCode.reason}: ${statusCode.defaultMessage}"
-                      }
-                      statusCode match {
-                        case Redirection(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-warning badge-pill">{statusInt}</a>
-                        case Informational(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-info badge-pill">{statusInt}</a>
-                        case Success(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-success badge-pill">{statusInt}</a>
-                        case ClientError(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-danger badge-pill">{statusInt}</a>
-                        case ServerError(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-danger badge-pill">{statusInt}</a>
-                      }
+          @{
+            if(result.hyperlinks)
+              <td>
+              <a href="#" data-toggle="modal" data-target="#totalLinksModal">
+              {result.hyperlinks.values.flatten.size}
+              </a>
+              </td>
+          }
+          @* Total-Links Modal *@
+          <div class="modal fade" id="totalLinksModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLongTitle">
+                    All Links & their Availabilities for @{
+                    result.location
+                  }</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <ul class="list-group">
+                  @{
+                    result.hyperlinks.values.flatten.map { availability =>
+
+                      <li class="list-group-item d-flex justify-content-between align-items-center">
+                      <a href={availability.link}>{availability.link}</a>{availability.statusCode match {
+                        case Right(code) => {
+                          val tooltipMessage: String = code match {
+                            case OK => s"${code.reason}"
+                            case _ => s"${code.reason}: ${code.defaultMessage}"
+                          }
+                          code match {
+                            case Redirection(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-warning badge-pill">{statusInt}</a>
+                            case Informational(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-info badge-pill">{statusInt}</a>
+                            case Success(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-success badge-pill">{statusInt}</a>
+                            case ClientError(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-danger badge-pill">{statusInt}</a>
+                            case ServerError(statusInt) => <a href="#" data-toggle="tooltip" title={tooltipMessage} class="badge badge-danger badge-pill">{statusInt}</a>
+                            case _ => <a href="#" data-toggle="tooltip" title="Could not get the statuscode of this link." class="badge badge-danger badge-pill">Error</a>
+                          }
+                        }
+
+                        case Left(message) => <a href="#" data-toggle="tooltip" title={message} class="badge badge-danger badge-pill">Error</a>
+                      }}
+                      </li>
+
                     }
-                    </li>
 
                   }
-
-                }
-                </ul>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  </ul>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
 
-        @{
-          result.hyperlinks.map { case (linktype, links) => <td>{links.size}</td> }
-        }
+          @{
+            result.hyperlinks.map { case (linktype, links) => <td>{links.size}</td> }
+          }
 
-        @result.headings.map { heading =>
-          <td>@heading._2.toString</td>
-        }
-      </tr>
-    </tbody>
-  </table>
+          @result.headings.map { heading =>
+            <td>@heading._2.toString</td>
+          }
+        </tr>
+      </tbody>
+    </table>
   }
 
 }

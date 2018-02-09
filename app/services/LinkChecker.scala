@@ -5,13 +5,14 @@ import javax.inject.{Inject, Singleton}
 import akka.http.scaladsl.model.StatusCode
 import com.google.inject.ImplementedBy
 import play.api.libs.ws.WSClient
+import play.shaded.ahc.org.asynchttpclient.handler.MaxRedirectException
 import services.LinkCheckerImpl.AvailabilitiesByLinkTarget
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.matching.Regex
 
-case class LinkAvailability(link: String, statusCode: StatusCode)
+case class LinkAvailability(link: String, statusCode: Either[String, StatusCode])
 
 
 @ImplementedBy(classOf[LinkCheckClientImpl])
@@ -21,11 +22,13 @@ trait LinkCheckClient {
 
 @Singleton
 class LinkCheckClientImpl @Inject()(ws: WSClient) extends LinkCheckClient {
-  def forUrl(url: String): Future[LinkAvailability] = ws.url(url).withFollowRedirects(true).get().map { response =>
-    LinkAvailability(url, StatusCode.int2StatusCode(response.status))
-  }
+  def forUrl(url: String): Future[LinkAvailability] =
+    ws.url(url).withFollowRedirects(true).get.map { response =>
+      LinkAvailability(url, Right(StatusCode.int2StatusCode(response.status)))
+    }.recoverWith {
+      case e: MaxRedirectException => Future.successful(LinkAvailability(url, Left("Too many redirects. (Max. 5)")))
+    }
 }
-
 
 @ImplementedBy(classOf[LinkCheckerImpl])
 trait LinkChecker {
