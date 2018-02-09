@@ -97,7 +97,7 @@
                     result.hyperlinks.values.flatten.map { availability =>
 
                       <li class="list-group-item d-flex justify-content-between align-items-center">
-                      <a href={availability.link}>{availability.link}</a>{availability.statusCode match {
+                      <a href={availability.link} class="list-group-item-truncate">{availability.link}</a> {availability.statusCode match {
                         case Right(code) => {
                           val tooltipMessage: String = code match {
                             case OK => s"${code.reason}"

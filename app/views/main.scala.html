@@ -10,30 +10,28 @@
 <html lang="en">
   <head>
     @* Here's where we render the page title `String`. *@
-  <title>@title</title>
+    <title>@title</title>
 
-  <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+    <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
 
     @* Bootstrap 4 (SBT WebJar Dependency) *@
-  <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("lib/bootstrap/css/bootstrap.min.css")">
-  <script type='text/javascript' src=@routes.Assets.versioned("lib/jquery/jquery.js")></script>
-    <script type='text/javascript' src=@routes.Assets.versioned("lib/popper.js/dist/umd/popper.js")
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("lib/bootstrap/css/bootstrap.min.css")">
+    <script type='text/javascript' src=@routes.Assets.versioned("lib/jquery/jquery.js")></script>
+    <script type='text/javascript' src=@routes.Assets.versioned("lib/popper.js/dist/umd/popper.js")></script>
+    <script type="text/javascript" src=@routes.Assets.versioned("lib/bootstrap/js/bootstrap.bundle.min.js")></script>
 
-
-            ></script>
-  <script type="text/javascript" src=@routes.Assets.versioned("lib/bootstrap/js/bootstrap.bundle.min.js")></script>
-
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/style.css")">
     <script>
-    $(function () {
-      $('[data-toggle="tooltip"]').tooltip()
-    })
+      $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+      })
     </script>
   </head>
   <body>
     @* And here's where we render the `Html` object containing
     * the page content. *@
-  <div class="container">
-  @content
-  </div>
+    <div class="container">
+    @content
+    </div>
   </body>
 </html>
