@@ -1,4 +1,5 @@
-# HTML Analyzer (Learning Project)
+# HTML Analyzer [![Build Status](https://travis-ci.org/sambokai/HTML-Analyzer.svg?branch=master)](https://travis-ci.org/sambokai/HTML-Analyzer)
+###### Learning Project
 My first Play!-Framework and Scala app. 
 
 HTML analysis tool built in Scala with Play Framework. Potential use for SEO.
